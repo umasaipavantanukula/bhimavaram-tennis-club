@@ -11,7 +11,8 @@ export function Navigation() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About Us" },
-    { href: "/tournaments", label: "Tournaments" },
+    // { href: "/tournaments", label: "Tournaments" },
+    { href: "/events", label: "Events" },
     { href: "/profiles", label: "Players" },
     { href: "/rankings", label: "Rankings" },
     // { href: "/court-booking", label: "Book Court" },
@@ -23,26 +24,26 @@ export function Navigation() {
   return (
     <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+        <div className="flex justify-between items-center h-16 gap-4">
+          <div className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center space-x-3">
               <img 
                 src="/logo.png" 
                 alt="Bhimavaram Tennis Club Logo" 
                 className="w-10 h-10 object-contain"
               />
-              <span className="font-bold text-xl text-foreground">Bhimavaram Tennis Club</span>
+              <span className="font-bold text-lg lg:text-xl text-foreground whitespace-nowrap">Bhimavaram Tennis Club</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-8 flex items-center space-x-6">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground px-2 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
                 >
                   {item.label}
                 </Link>
@@ -50,9 +51,9 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:block flex-shrink-0">
             <Link href="/admin">
-              <Button variant="outline">Admin</Button>
+              <Button variant="outline" size="sm">Admin</Button>
             </Link>
           </div>
 

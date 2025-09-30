@@ -206,6 +206,21 @@ export const newsOperations = {
 
   async getPublished() {
     const database = ensureDb()
+    console.log("[News Operations] Fetching published articles...")
+    
+    // First, let's get all articles to see what we have
+    const allQuery = query(collection(database, "news"), orderBy("createdAt", "desc"))
+    const allSnapshot = await getDocs(allQuery)
+    const allArticles = allSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt.toDate(),
+    })) as NewsArticle[]
+    
+    console.log("[News Operations] All articles:", allArticles)
+    console.log("[News Operations] Published status of articles:", allArticles.map(a => ({ title: a.title, published: a.published })))
+    
+    // Now get only published ones
     const q = query(collection(database, "news"), where("published", "==", true))
     const snapshot = await getDocs(q)
     const articles = snapshot.docs.map((doc) => ({
@@ -214,6 +229,8 @@ export const newsOperations = {
       createdAt: doc.data().createdAt.toDate(),
     })) as NewsArticle[]
 
+    console.log("[News Operations] Published articles:", articles)
+    
     // Sort in memory instead of using compound index
     return articles.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   },
@@ -282,127 +299,98 @@ export const eventOperations = {
   },
 }
 
-// File upload operations
+// File upload operations (Base64 with automatic compression)
 export const uploadOperations = {
   async uploadImage(file: File, path: string): Promise<string> {
     try {
       console.log("[v0] Starting image upload:", file.name)
-      console.log("[v0] File size:", (file.size / 1024 / 1024).toFixed(2), "MB")
-      console.log("[v0] File type:", file.type)
+      console.log("[v0] Original file size:", (file.size / 1024 / 1024).toFixed(2), "MB")
       console.log("[v0] Upload path:", path)
-
-      const storageInstance = ensureStorage()
-      console.log("[v0] Storage instance:", "Available")
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
         throw new Error("Only image files are allowed.")
       }
 
-      // Validate file size (10MB max)
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error("File size must be less than 10MB.")
-      }
+      // Compress image if it's too large
+      const compressedFile = await this.compressImage(file)
+      console.log("[v0] Compressed file size:", (compressedFile.size / 1024 / 1024).toFixed(2), "MB")
 
-      const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-      const storageRef = ref(storageInstance, `${path}/${filename}`)
-      console.log("[v0] Storage reference created:", storageRef.fullPath)
+      // Convert to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(compressedFile)
+      })
 
-      const snapshot = await uploadBytes(storageRef, file)
-      console.log("[v0] Upload successful, getting download URL")
+      console.log("[v0] Base64 conversion successful")
+      return base64
 
-      const downloadURL = await getDownloadURL(snapshot.ref)
-      console.log("[v0] Download URL obtained:", downloadURL)
-
-      return downloadURL
     } catch (error: any) {
       console.error("[v0] Upload error:", error)
-      console.error("[v0] Error code:", error.code)
-      console.error("[v0] Error message:", error.message)
-
-      // Handle specific Firebase Storage errors
-      if (error.code === "storage/unknown" || error.message?.includes("CORS")) {
-        throw new Error(
-          `❌ CORS Error: Upload failed due to cross-origin policy. This usually means:\n` +
-          `• The Firebase Storage bucket CORS settings need to be updated\n` +
-          `• Your domain (${typeof window !== 'undefined' ? window.location.origin : 'localhost'}) needs to be added to allowed origins\n\n` +
-          `To fix this:\n` +
-          `1. Go to Firebase Console > Storage > Rules\n` +
-          `2. Set up CORS configuration for your domain\n` +
-          `3. Or contact the developer to configure CORS settings`
-        )
-      }
-
-      if (error.code === "storage/unauthorized") {
-        throw new Error(
-          `❌ Authorization Error: You don't have permission to upload files.\n` +
-          `This could mean:\n` +
-          `• You need to be signed in\n` +
-          `• Storage security rules are too restrictive\n` +
-          `• Your account doesn't have the required permissions`
-        )
-      }
-
-      if (error.code === "storage/canceled") {
-        throw new Error("❌ Upload was canceled. Please try again.")
-      }
-
-      if (error.code === "storage/quota-exceeded") {
-        throw new Error("❌ Storage quota exceeded. Please contact the administrator.")
-      }
-
-      if (error.code === "storage/retry-limit-exceeded") {
-        throw new Error("❌ Upload failed after multiple retries. Please check your internet connection.")
-      }
-
-      if (error.code === "storage/invalid-format") {
-        throw new Error("❌ Invalid file format. Please upload a valid image file (JPG, PNG, GIF, WebP).")
-      }
-
-      // Network-related errors
-      if (error.message?.includes("NetworkError") || error.message?.includes("Failed to fetch")) {
-        throw new Error(
-          `❌ Network Error: Failed to connect to Firebase Storage.\n` +
-          `Please check:\n` +
-          `• Your internet connection\n` +
-          `• Firebase service status\n` +
-          `• Try again in a moment`
-        )
-      }
-
-      // Generic error with helpful context
-      throw new Error(
-        `❌ Upload failed: ${error.message || "Unknown error"}\n\n` +
-        `Debug info:\n` +
-        `• File: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)\n` +
-        `• Path: ${path}\n` +
-        `• Type: ${file.type}\n` +
-        `• Error code: ${error.code || 'N/A'}`
-      )
+      throw new Error(`❌ Upload failed: ${error.message}`)
     }
   },
 
+  async compressImage(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+
+      img.onload = () => {
+        try {
+          // Calculate new dimensions (max 800px width/height)
+          const maxSize = 800
+          let { width, height } = img
+          
+          if (width > height) {
+            if (width > maxSize) {
+              height = (height * maxSize) / width
+              width = maxSize
+            }
+          } else {
+            if (height > maxSize) {
+              width = (width * maxSize) / height
+              height = maxSize
+            }
+          }
+
+          // Set canvas dimensions
+          canvas.width = width
+          canvas.height = height
+
+          // Draw and compress
+          ctx?.drawImage(img, 0, 0, width, height)
+          
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                })
+                resolve(compressedFile)
+              } else {
+                reject(new Error('Image compression failed'))
+              }
+            },
+            'image/jpeg',
+            0.7 // 70% quality
+          )
+        } catch (error) {
+          reject(error)
+        }
+      }
+
+      img.onerror = () => reject(new Error('Failed to load image'))
+      img.src = URL.createObjectURL(file)
+    })
+  },
+
   async deleteImage(url: string) {
-    try {
-      console.log("[v0] Deleting image:", url)
-
-      const storageInstance = ensureStorage()
-      const imageRef = ref(storageInstance, url)
-      await deleteObject(imageRef)
-      console.log("[v0] Image deleted successfully")
-    } catch (error: any) {
-      console.error("[v0] Delete error:", error)
-
-      if (error.code === "storage/object-not-found") {
-        console.warn("[v0] Image not found, may have been already deleted")
-        return // Don't throw error for already deleted images
-      }
-
-      if (error.code === "storage/unauthorized") {
-        throw new Error("❌ Delete access denied. You don't have permission to delete this file.")
-      }
-
-      throw new Error(`❌ Delete failed: ${error.message || "Unknown error"}`)
-    }
+    // No deletion needed for base64 images stored in Firestore
+    console.log("[v0] Base64 images don't need separate deletion")
   },
 }

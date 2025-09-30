@@ -28,10 +28,13 @@ export default function NewsPage() {
 
   const loadNews = async () => {
     try {
+      console.log("[News] Loading published articles...")
       const data = await newsOperations.getPublished()
+      console.log("[News] Fetched articles:", data)
+      console.log("[News] Number of articles:", data.length)
       setArticles(data)
     } catch (error) {
-      console.error("Error loading news:", error)
+      console.error("[News] Error loading news:", error)
     } finally {
       setLoading(false)
     }
