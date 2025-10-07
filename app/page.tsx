@@ -141,7 +141,137 @@ export default function HomePage() {
           )}
         </section>
 
+        {/* Tennis Club Features - Alternating Layout */}
+        {/* Feature 1: Professional Training */}
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Image Side */}
+              <div className="relative">
+                <div >
+                  <img
+                    src="homeimage.png"
+                    alt="Professional Tennis Training"
+                    className="w-full h-full object-cover rounded-xl shadow-lg"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-3">
+                    <Trophy className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Text Side */}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-4xl font-bold text-foreground mb-4">
+                    Bhimavaram Tennis club
+                  </h2>
+                  <p className="text-lg text-muted-foreground mb-6">
+                    Elevate your game with expert coaching and personalized training programs. Join 100+ players who have improved their skills!
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Expert certified coaches</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Personalized training plans</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Modern training facilities</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-green-600"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Performance tracking & analysis</span>
+                  </div>
+                </div>
+                
+                <Button className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg">
+                  Explore
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature 2: Court Booking System (Reversed Layout) */}
+        <section className="py-16 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Text Side (First on mobile, Second on desktop) */}
+              <div className="space-y-6 lg:order-1">
+                <div>
+                  <h2 className="text-4xl font-bold text-foreground mb-4">
+                     Tennis Hub
+                  </h2>
+                  <p className="text-lg text-muted-foreground mb-6">
+                    Streamlined court booking and club management system. Access your schedules, track progress, and connect with the tennis community.
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span className="text-foreground font-medium"> court access</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Real-time availability</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Match scheduling</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                    </div>
+                    <span className="text-foreground font-medium">Player rankings & stats</span>
+                  </div>
+                </div>
+                
+                <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 text-lg">
+                  Explore
+                </Button>
+              </div>
+              
+              {/* Image Side (Second on mobile, First on desktop) */}
+              <div className="relative lg:order-2">
+                <div >
+                  <img
+                    src="image.png"
+                    alt="Tennis Court Booking System"
+                    className="w-full h-full object-cover rounded-xl shadow-lg"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-3">
+                    <Trophy className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Latest News */}
+        {/*
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-muted/30 py-16 -mx-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -212,8 +342,10 @@ export default function HomePage() {
             </Card>
           )}
         </section>
+        */}
 
         {/* Upcoming Events */}
+        {/*
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -275,6 +407,7 @@ export default function HomePage() {
             </Card>
           )}
         </section>
+        */}
       </div>
 
       <Footer />

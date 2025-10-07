@@ -11,32 +11,28 @@ export function Navigation() {
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/about", label: "About Us" },
-    // { href: "/tournaments", label: "Tournaments" },
     { href: "/events", label: "Events" },
     { href: "/profiles", label: "Players" },
     { href: "/rankings", label: "Rankings" },
-    // { href: "/court-booking", label: "Book Court" },
     { href: "/gallery", label: "Gallery" },
     { href: "/highlights", label: "Highlights" },
     { href: "/news", label: "News" },
-    { href: "/contact", label: "Contact" },
   ]
 
   return (
     <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-4">
-          <div className="flex items-center flex-shrink-0">
-            <Link href="/" className="flex items-center space-x-3">
+            <div className="flex items-center flex-shrink-0">
+            <Link href="/" className="flex items-center space-x-9">
               <img 
                 src="/logo.png" 
                 alt="Bhimavaram Tennis Club Logo" 
                 className="w-20 h-20 object-contain"
               />
-              <span className="font-bold text-lg lg:text-xl text-foreground whitespace-nowrap">Bhimavaram Tennis Club</span>
+              {/* <span className="font-bold text-2xl lg:text-3xl text-foreground whitespace-nowrap">Bhimavaram Tennis Club</span> */}
             </Link>
-          </div>
+            </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
