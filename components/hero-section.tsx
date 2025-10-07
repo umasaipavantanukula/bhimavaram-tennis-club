@@ -145,7 +145,7 @@ export function HeroSection() {
             {/* Main Tennis Image */}
             <div className="relative w-96 h-96 flex items-center justify-center">
               <img 
-                src="/Tennis_Racket_and_Balls.jpg" 
+                src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3ATennis_Racket_and_Balls.jpg&psig=AOvVaw2UEhBmKWOVtPWRILHppenT&ust=1759902072592000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCIDH96SwkZADFQAAAAAdAAAAABAE" 
                 alt="Tennis Championship Action" 
                 className="w-80 h-80 object-cover rounded-full border-4 border-gradient-to-r from-yellow-400 to-amber-500 shadow-2xl filter brightness-110 contrast-110"
               />
