@@ -5,8 +5,10 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { AuthProvider } from "@/lib/auth-context"
 import { LoadingProvider } from "@/lib/loading-context"
+import { PiPProvider } from "@/lib/pip-context"
 import { NavigationHandler } from "@/components/navigation-handler"
 import { PageLoadingWrapper } from "@/components/page-loading-wrapper"
+import { PiPWrapper } from "@/components/pip-wrapper"
 import "./globals.css"
 
 const inter = Inter({
@@ -19,6 +21,9 @@ export const metadata: Metadata = {
   description:
     "Join Bhimavaram Tennis Club - Professional coaching, court booking, tournaments, and tennis community in Bhimavaram",
   generator: "v0.app",
+  manifest: "/manifest.json",
+  themeColor: "#7c3aed",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 }
 
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
@@ -26,7 +31,10 @@ function RootLayoutContent({ children }: { children: React.ReactNode }) {
     <LoadingProvider>
       <NavigationHandler>
         <AuthProvider>
-          <Suspense fallback={null}>{children}</Suspense>
+          <PiPProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+            <PiPWrapper />
+          </PiPProvider>
         </AuthProvider>
         <PageLoadingWrapper />
       </NavigationHandler>
