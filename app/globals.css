@@ -1,86 +1,82 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Tennis-inspired color scheme with green, white, yellow accents */
-  --background: oklch(0.98 0.01 120);
-  --foreground: oklch(0.15 0.02 140);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.02 140);
+  --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 140);
-  --primary: oklch(0.45 0.15 140);
-  --primary-foreground: oklch(0.98 0.01 120);
-  --secondary: oklch(0.92 0.02 120);
-  --secondary-foreground: oklch(0.15 0.02 140);
-  --muted: oklch(0.95 0.01 120);
-  --muted-foreground: oklch(0.55 0.02 140);
-  --accent: oklch(0.75 0.18 85);
-  --accent-foreground: oklch(0.15 0.02 140);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.98 0.01 120);
-  --border: oklch(0.88 0.02 120);
-  --input: oklch(0.92 0.02 120);
-  --ring: oklch(0.45 0.15 140);
-  --chart-1: oklch(0.45 0.15 140);
-  --chart-2: oklch(0.75 0.18 85);
-  --chart-3: oklch(0.35 0.12 160);
-  --chart-4: oklch(0.65 0.15 100);
-  --chart-5: oklch(0.55 0.12 180);
-  --radius: 0.75rem;
-  --sidebar: oklch(0.98 0.01 120);
-  --sidebar-foreground: oklch(0.15 0.02 140);
-  --sidebar-primary: oklch(0.45 0.15 140);
-  --sidebar-primary-foreground: oklch(0.98 0.01 120);
-  --sidebar-accent: oklch(0.92 0.02 120);
-  --sidebar-accent-foreground: oklch(0.15 0.02 140);
-  --sidebar-border: oklch(0.88 0.02 120);
-  --sidebar-ring: oklch(0.45 0.15 140);
-  --font-inter: "Inter", sans-serif;
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  /* Dark mode tennis theme */
-  --background: oklch(0.08 0.02 140);
-  --foreground: oklch(0.95 0.01 120);
-  --card: oklch(0.12 0.02 140);
-  --card-foreground: oklch(0.95 0.01 120);
-  --popover: oklch(0.12 0.02 140);
-  --popover-foreground: oklch(0.95 0.01 120);
-  --primary: oklch(0.55 0.15 140);
-  --primary-foreground: oklch(0.08 0.02 140);
-  --secondary: oklch(0.18 0.02 140);
-  --secondary-foreground: oklch(0.95 0.01 120);
-  --muted: oklch(0.15 0.02 140);
-  --muted-foreground: oklch(0.65 0.02 140);
-  --accent: oklch(0.75 0.18 85);
-  --accent-foreground: oklch(0.08 0.02 140);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.95 0.01 120);
-  --border: oklch(0.18 0.02 140);
-  --input: oklch(0.18 0.02 140);
-  --ring: oklch(0.55 0.15 140);
-  --chart-1: oklch(0.55 0.15 140);
-  --chart-2: oklch(0.75 0.18 85);
-  --chart-3: oklch(0.45 0.12 160);
-  --chart-4: oklch(0.65 0.15 100);
-  --chart-5: oklch(0.55 0.12 180);
-  --sidebar: oklch(0.12 0.02 140);
-  --sidebar-foreground: oklch(0.95 0.01 120);
-  --sidebar-primary: oklch(0.55 0.15 140);
-  --sidebar-primary-foreground: oklch(0.08 0.02 140);
-  --sidebar-accent: oklch(0.18 0.02 140);
-  --sidebar-accent-foreground: oklch(0.95 0.01 120);
-  --sidebar-border: oklch(0.18 0.02 140);
-  --sidebar-ring: oklch(0.55 0.15 140);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
 }
 
 @theme inline {
-  /* Updated font variables to use Inter instead of Geist */
-  --font-sans: var(--font-inter);
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -126,4 +122,46 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Championship Hero Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }

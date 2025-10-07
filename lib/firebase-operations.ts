@@ -394,3 +394,170 @@ export const uploadOperations = {
     console.log("[v0] Base64 images don't need separate deletion")
   },
 }
+
+// Highlights operations
+export interface MatchHighlight {
+  id?: string
+  title: string
+  date: Date
+  description: string
+  thumbnailUrl: string
+  videoUrl?: string
+  imageUrls: string[]
+  matchType: "tournament" | "friendly" | "training" | "championship"
+  players: string[]
+  score: string
+  featured: boolean
+  createdAt: Date
+}
+
+export const highlightsOperations = {
+  async create(highlight: Omit<MatchHighlight, "id" | "createdAt">) {
+    const database = ensureDb()
+    const docRef = await addDoc(collection(database, "highlights"), {
+      ...highlight,
+      date: Timestamp.fromDate(highlight.date),
+      createdAt: Timestamp.fromDate(new Date()),
+    })
+    return docRef.id
+  },
+
+  async getAll(): Promise<MatchHighlight[]> {
+    const database = ensureDb()
+    const q = query(collection(database, "highlights"), orderBy("date", "desc"))
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data()
+      try {
+        return {
+          id: doc.id,
+          title: data.title || "Untitled",
+          date: data.date?.toDate ? data.date.toDate() : new Date(data.date),
+          description: data.description || "",
+          thumbnailUrl: data.thumbnailUrl || "/placeholder.jpg",
+          videoUrl: data.videoUrl,
+          imageUrls: data.imageUrls || [],
+          matchType: data.matchType || "tournament",
+          players: data.players || [],
+          score: data.score || "Match",
+          featured: data.featured || false,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+        } as MatchHighlight
+      } catch (error) {
+        console.error("Error parsing highlight document:", doc.id, error)
+        return {
+          id: doc.id,
+          title: data.title || "Untitled",
+          date: new Date(),
+          description: data.description || "",
+          thumbnailUrl: "/placeholder.jpg",
+          videoUrl: data.videoUrl,
+          imageUrls: [],
+          matchType: "tournament",
+          players: [],
+          score: "Match",
+          featured: false,
+          createdAt: new Date(),
+        } as MatchHighlight
+      }
+    })
+  },
+
+  async getById(id: string): Promise<MatchHighlight | null> {
+    const database = ensureDb()
+    const docRef = doc(database, "highlights", id)
+    const docSnap = await getDocs(query(collection(database, "highlights"), where("__name__", "==", id)))
+    
+    if (docSnap.empty) {
+      return null
+    }
+
+    const data = docSnap.docs[0].data()
+    return {
+      id: docSnap.docs[0].id,
+      title: data.title,
+      date: data.date.toDate(),
+      description: data.description,
+      thumbnailUrl: data.thumbnailUrl,
+      videoUrl: data.videoUrl,
+      imageUrls: data.imageUrls || [],
+      matchType: data.matchType,
+      players: data.players || [],
+      score: data.score,
+      featured: data.featured || false,
+      createdAt: data.createdAt.toDate(),
+    } as MatchHighlight
+  },
+
+  async update(id: string, highlight: Partial<Omit<MatchHighlight, "id" | "createdAt">>) {
+    const database = ensureDb()
+    const docRef = doc(database, "highlights", id)
+    const updateData: any = { ...highlight }
+    
+    if (highlight.date) {
+      updateData.date = Timestamp.fromDate(highlight.date)
+    }
+    
+    await updateDoc(docRef, updateData)
+  },
+
+  async delete(id: string) {
+    const database = ensureDb()
+    const docRef = doc(database, "highlights", id)
+    await deleteDoc(docRef)
+  },
+
+  async getFeatured(): Promise<MatchHighlight[]> {
+    const database = ensureDb()
+    const q = query(
+      collection(database, "highlights"),
+      where("featured", "==", true),
+      orderBy("date", "desc")
+    )
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        title: data.title,
+        date: data.date.toDate(),
+        description: data.description,
+        thumbnailUrl: data.thumbnailUrl,
+        videoUrl: data.videoUrl,
+        imageUrls: data.imageUrls || [],
+        matchType: data.matchType,
+        players: data.players || [],
+        score: data.score,
+        featured: data.featured || false,
+        createdAt: data.createdAt.toDate(),
+      } as MatchHighlight
+    })
+  },
+
+  async getByType(matchType: string): Promise<MatchHighlight[]> {
+    const database = ensureDb()
+    const q = query(
+      collection(database, "highlights"),
+      where("matchType", "==", matchType),
+      orderBy("date", "desc")
+    )
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        title: data.title,
+        date: data.date.toDate(),
+        description: data.description,
+        thumbnailUrl: data.thumbnailUrl,
+        videoUrl: data.videoUrl,
+        imageUrls: data.imageUrls || [],
+        matchType: data.matchType,
+        players: data.players || [],
+        score: data.score,
+        featured: data.featured || false,
+        createdAt: data.createdAt.toDate(),
+      } as MatchHighlight
+    })
+  },
+}

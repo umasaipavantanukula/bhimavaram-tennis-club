@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { LoadingLink } from "@/components/loading-link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 
@@ -17,6 +18,7 @@ export function Navigation() {
     { href: "/rankings", label: "Rankings" },
     // { href: "/court-booking", label: "Book Court" },
     { href: "/gallery", label: "Gallery" },
+    { href: "/highlights", label: "Highlights" },
     { href: "/news", label: "News" },
     { href: "/contact", label: "Contact" },
   ]
@@ -30,7 +32,7 @@ export function Navigation() {
               <img 
                 src="/logo.png" 
                 alt="Bhimavaram Tennis Club Logo" 
-                className="w-10 h-10 object-contain"
+                className="w-20 h-20 object-contain"
               />
               <span className="font-bold text-lg lg:text-xl text-foreground whitespace-nowrap">Bhimavaram Tennis Club</span>
             </Link>
@@ -40,21 +42,21 @@ export function Navigation() {
           <div className="hidden md:block">
             <div className="ml-8 flex items-center space-x-6">
               {navItems.map((item) => (
-                <Link
+                <LoadingLink
                   key={item.href}
                   href={item.href}
                   className="text-muted-foreground hover:text-foreground px-2 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap"
                 >
                   {item.label}
-                </Link>
+                </LoadingLink>
               ))}
             </div>
           </div>
 
           <div className="hidden md:block flex-shrink-0">
-            <Link href="/admin">
+            <LoadingLink href="/admin">
               <Button variant="outline" size="sm">Admin</Button>
-            </Link>
+            </LoadingLink>
           </div>
 
           {/* Mobile menu button */}
@@ -70,21 +72,21 @@ export function Navigation() {
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-card border-t border-border">
               {navItems.map((item) => (
-                <Link
+                <LoadingLink
                   key={item.href}
                   href={item.href}
                   className="text-muted-foreground hover:text-foreground block px-3 py-2 rounded-md text-base font-medium transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
-                </Link>
+                </LoadingLink>
               ))}
               <div className="px-3 py-2">
-                <Link href="/admin">
+                <LoadingLink href="/admin">
                   <Button className="w-full bg-transparent" variant="outline">
                     Admin Dashboard
                   </Button>
-                </Link>
+                </LoadingLink>
               </div>
             </div>
           </div>

@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { LogOut, Users, Trophy, Camera, Newspaper, Calendar, BarChart3 } from "lucide-react"
+import { LogOut, Users, Trophy, Camera, Newspaper, Calendar, BarChart3, Video } from "lucide-react"
 import { MatchesManager } from "./admin/matches-manager"
 import { GalleryManager } from "./admin/gallery-manager"
 import { ProfilesManager } from "./admin/profiles-manager"
 import { NewsManager } from "./admin/news-manager"
 import { EventsManager } from "./admin/events-manager"
+import { HighlightsManager } from "./admin/highlights-manager"
 
 export function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -50,7 +51,7 @@ export function AdminDashboard() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
@@ -66,6 +67,10 @@ export function AdminDashboard() {
             <TabsTrigger value="gallery" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
               Gallery
+            </TabsTrigger>
+            <TabsTrigger value="highlights" className="flex items-center gap-2">
+              <Video className="h-4 w-4" />
+              Highlights
             </TabsTrigger>
             <TabsTrigger value="news" className="flex items-center gap-2">
               <Newspaper className="h-4 w-4" />
@@ -165,6 +170,10 @@ export function AdminDashboard() {
 
           <TabsContent value="gallery">
             <GalleryManager />
+          </TabsContent>
+
+          <TabsContent value="highlights">
+            <HighlightsManager />
           </TabsContent>
 
           <TabsContent value="news">

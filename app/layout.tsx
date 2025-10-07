@@ -4,6 +4,9 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { AuthProvider } from "@/lib/auth-context"
+import { LoadingProvider } from "@/lib/loading-context"
+import { NavigationHandler } from "@/components/navigation-handler"
+import { PageLoadingWrapper } from "@/components/page-loading-wrapper"
 import "./globals.css"
 
 const inter = Inter({
@@ -18,6 +21,19 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
+function RootLayoutContent({ children }: { children: React.ReactNode }) {
+  return (
+    <LoadingProvider>
+      <NavigationHandler>
+        <AuthProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+        </AuthProvider>
+        <PageLoadingWrapper />
+      </NavigationHandler>
+    </LoadingProvider>
+  )
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,9 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${inter.variable}`}>
-        <AuthProvider>
-          <Suspense fallback={null}>{children}</Suspense>
-        </AuthProvider>
+        <RootLayoutContent>{children}</RootLayoutContent>
         <Analytics />
       </body>
     </html>

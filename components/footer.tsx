@@ -12,7 +12,7 @@ export function Footer() {
               <img 
                 src="/logo.png" 
                 alt="Bhimavaram Tennis Club Logo" 
-                className="w-10 h-10 object-contain"
+                className="w-20 h-20 object-contain"
               />
               <span className="font-bold text-lg">Bhimavaram Tennis Club</span>
             </div>
