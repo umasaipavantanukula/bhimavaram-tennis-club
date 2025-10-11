@@ -11,12 +11,14 @@ export function Navigation() {
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/events", label: "Events" },
+     { href: "/tournaments", label: "Matchs" },
+    // { href: "/events", label: "Events" },
     { href: "/profiles", label: "Players" },
     { href: "/rankings", label: "Rankings" },
+   
     { href: "/gallery", label: "Gallery" },
     { href: "/highlights", label: "Highlights" },
-    { href: "/news", label: "News" },
+    // { href: "/news", label: "News" },
   ]
 
   return (

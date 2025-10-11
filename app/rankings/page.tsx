@@ -14,7 +14,7 @@ import { profileOperations, type PlayerProfile } from "@/lib/firebase-operations
 interface RankingData extends PlayerProfile {
   previousRanking?: number
   trend: "up" | "down" | "same"
-  points: number
+  isAutoRanked?: boolean
 }
 
 export default function RankingsPage() {
@@ -36,16 +36,39 @@ export default function RankingsPage() {
     try {
       const profiles = await profileOperations.getAll()
 
-      // Convert profiles to ranking data with mock points and trends
-      const rankingData: RankingData[] = profiles
-        .filter((profile) => profile.ranking)
-        .map((profile, index) => ({
-          ...profile,
-          points: Math.max(1000 - profile.ranking! * 50 + Math.floor(Math.random() * 200), 100),
-          previousRanking: profile.ranking! + Math.floor(Math.random() * 3) - 1,
-          trend: Math.random() > 0.5 ? "up" : Math.random() > 0.3 ? "down" : "same",
-        }))
-        .sort((a, b) => (a.ranking || 999) - (b.ranking || 999))
+      // Convert profiles to ranking data with trends
+      // First, assign auto-rankings to players without rankings based on points
+      const profilesWithRankings = profiles.map((profile, index) => {
+        if (!profile.ranking) {
+          // Auto-assign ranking based on points or order
+          const autoRank = profiles.filter(p => p.ranking).length + index + 1
+          return { ...profile, ranking: autoRank, isAutoRanked: true }
+        }
+        return { ...profile, isAutoRanked: false }
+      })
+
+      const rankingData: RankingData[] = profilesWithRankings
+        .map((profile, index) => {
+          const trendValue = Math.random()
+          let trend: "up" | "down" | "same" = "same"
+          if (trendValue > 0.6) trend = "up"
+          else if (trendValue < 0.3) trend = "down"
+          
+          return {
+            ...profile,
+            previousRanking: profile.ranking! + Math.floor(Math.random() * 3) - 1,
+            trend,
+          }
+        })
+        .sort((a, b) => {
+          // Sort by points first (descending), then by ranking
+          const pointsA = a.points || 0
+          const pointsB = b.points || 0
+          if (pointsA !== pointsB) {
+            return pointsB - pointsA
+          }
+          return (a.ranking || 999) - (b.ranking || 999)
+        })
 
       setRankings(rankingData)
     } catch (error) {
@@ -88,39 +111,36 @@ export default function RankingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
       <Navigation />
 
       {/* Header Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="text-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">Player Rankings</h1>
-            <p className="text-gray-600 mt-2">
-              Current standings of our tennis club members
-            </p>
+            <h1 className="text-4xl font-bold mb-2">Tennis Club Rankings</h1>
           </div>
         </div>
       </div>
 
-      <div className="py-8">
+      <div className="py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Filters */}
-          <Card className="mb-6">
+          <Card className="mb-4 shadow-lg border-0">
             <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Search players..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-green-200 focus:border-green-500"
                   />
                 </div>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-full sm:w-48">
+                  <SelectTrigger className="w-full sm:w-48 border-green-200 focus:border-green-500">
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -134,14 +154,15 @@ export default function RankingsPage() {
             </CardContent>
           </Card>
 
-          {/* Rankings List */}
+          {/* Tennis Statistics Table */}
           {loading ? (
-            <div className="space-y-4">
-              {[...Array(10)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+            <Card className="shadow-lg border-0">
+              <CardContent className="p-0">
+                <div className="animate-pulse">
+                  <div className="bg-gray-200 h-12"></div>
+                  {[...Array(10)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4 p-4 border-b">
+                      <div className="w-8 h-8 bg-gray-200 rounded"></div>
                       <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                       <div className="flex-1">
                         <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -149,85 +170,138 @@ export default function RankingsPage() {
                       </div>
                       <div className="w-16 h-8 bg-gray-200 rounded"></div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           ) : filteredRankings.length > 0 ? (
-            <div className="space-y-4">
-              {filteredRankings.map((player) => (
-                <Card key={player.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full">
-                          {getRankingBadge(player.ranking!)}
-                        </div>
-                        <img
-                          src={player.imageUrl || "/placeholder.svg"}
-                          alt={player.name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
-                        />
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {player.name}
-                          </h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="secondary">
-                              {player.category}
-                            </Badge>
-                            <span className="text-sm text-gray-600">Age {player.age}</span>
-                          </div>
-                        </div>
-                      </div>
+            <Card className="shadow-lg border-0 overflow-hidden">
+              <CardContent className="p-0">
+                {/* Table Header */}
+                <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white">
+                  <div className="grid grid-cols-12 gap-4 p-3 text-sm font-semibold">
+                    <div className="col-span-1 text-center">POS</div>
+                    <div className="col-span-2">Player</div>
+                    <div className="col-span-1 text-center">Points</div>
+                    <div className="col-span-1 text-center">Mat</div>
+                    <div className="col-span-1 text-center">Won</div>
+                    <div className="col-span-1 text-center">Win%</div>
+                    <div className="col-span-1 text-center">Sets</div>
+                    <div className="col-span-1 text-center">Games</div>
+                    <div className="col-span-1 text-center">Serve%</div>
+                    <div className="col-span-1 text-center">Aces</div>
+                    <div className="col-span-1 text-center">Streak</div>
+                  </div>
+                </div>
 
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <div className="text-xl font-bold text-gray-900">{player.points}</div>
-                          <div className="flex items-center justify-end gap-1 text-sm">
-                            {getTrendIcon(player.trend)}
-                            {player.previousRanking && player.previousRanking !== player.ranking && (
-                              <span className={`font-medium ${
-                                player.trend === "up" ? "text-green-600" : player.trend === "down" ? "text-red-500" : "text-gray-500"
-                              }`}>
-                                {player.trend === "up" ? "+" : "-"}
-                                {Math.abs(player.previousRanking - player.ranking!)}
-                              </span>
+                {/* Table Rows */}
+                <div>
+                  {filteredRankings.map((player, index) => (
+                    <div key={player.id} className={`grid grid-cols-12 gap-4 p-3 items-center hover:bg-green-50/50 transition-colors border-b border-gray-100 ${
+                      index % 2 === 1 ? "bg-gray-50/30" : "bg-white"
+                    }`}>
+                      {/* Position */}
+                      <div className="col-span-1 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="flex items-center justify-center">
+                            {player.ranking === 1 && <Trophy className="h-5 w-5 text-yellow-500" />}
+                            {player.ranking === 2 && <Medal className="h-5 w-5 text-gray-400" />}
+                            {player.ranking === 3 && <Award className="h-5 w-5 text-orange-500" />}
+                            {(player.ranking || 0) > 3 && (
+                              <span className="text-lg font-bold text-gray-700">{index + 1}</span>
                             )}
                           </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          View Profile
-                        </Button>
-                      </div>
-                    </div>
-
-                    {player.achievements.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm font-medium text-gray-700 mb-2">
-                          Recent Achievements:
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {player.achievements.slice(0, 3).map((achievement, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
-                              {achievement}
-                            </Badge>
-                          ))}
-                          {player.achievements.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{player.achievements.length - 3} more
-                            </Badge>
+                          {player.isAutoRanked && (
+                            <span className="text-xs text-gray-400 mt-1">Auto</span>
                           )}
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
+                      {/* Player Info */}
+                      <div className="col-span-2 flex items-center gap-3">
+                        <img
+                          src={player.imageUrl || "/placeholder-user.jpg"}
+                          alt={player.name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-green-200"
+                        />
+                        <div>
+                          <div className="font-semibold text-gray-900 text-sm">
+                            {player.name}
+                          </div>
+                          <div className="text-xs text-gray-500 uppercase font-medium">
+                            {player.category}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Points */}
+                      <div className="col-span-1 text-center">
+                        <div className="font-bold text-lg text-gray-900">{player.points || 0}</div>
+                      </div>
+
+                      {/* Matches Played */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">{player.matchesPlayed || 0}</div>
+                      </div>
+
+                      {/* Matches Won */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">{player.matchesWon || 0}</div>
+                      </div>
+
+                      {/* Win Percentage */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm font-medium text-gray-900">
+                          {player.winPercentage?.toFixed(1) || '0.0'}%
+                        </div>
+                      </div>
+
+                      {/* Sets Ratio */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">
+                          {player.setsWon || 0}-{player.setsLost || 0}
+                        </div>
+                      </div>
+
+                      {/* Games Ratio */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">
+                          {player.gamesWon || 0}-{player.gamesLost || 0}
+                        </div>
+                      </div>
+
+                      {/* Serving Percentage */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">
+                          {player.servingPercentage?.toFixed(1) || '0.0'}%
+                        </div>
+                      </div>
+
+                      {/* Aces */}
+                      <div className="col-span-1 text-center">
+                        <div className="text-sm text-gray-700">{player.acesServed || 0}</div>
+                      </div>
+
+                      {/* Current Streak */}
+                      <div className="col-span-1 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <span className={`text-sm font-medium ${
+                            (player.currentStreak || 0) > 0 ? 'text-green-600' : 
+                            (player.currentStreak || 0) < 0 ? 'text-red-500' : 'text-gray-700'
+                          }`}>
+                            {player.currentStreak || 0}
+                          </span>
+                          {getTrendIcon(player.trend)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           ) : (
-            <Card>
-              <CardContent className="text-center py-12">
+            <Card className="shadow-lg border-0">
+              <CardContent className="text-center py-8">
                 <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No rankings found</h3>
                 <p className="text-gray-600">

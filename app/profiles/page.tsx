@@ -105,15 +105,15 @@ export default function ProfilesPage() {
       <Navigation />
 
       {/* Community Overview */}
-      <section className="py-12 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950 dark:via-emerald-950 dark:to-teal-950">
+      <section className="py-8 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950 dark:via-emerald-950 dark:to-teal-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mb-4">
               <Users className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-700 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3">Tennis Community</h1>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-700 via-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">Tennis Community</h1>
             <p className="text-green-700 dark:text-green-300 text-lg">Discover our passionate tennis players</p>
-            <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto mt-4 rounded-full"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-emerald-500 mx-auto mt-3 rounded-full"></div>
           </div>
           
           <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
@@ -177,11 +177,11 @@ export default function ProfilesPage() {
       </section>
 
       {/* Filters Section */}
-      <section className="py-8 bg-white dark:bg-gray-900">
+      <section className="py-4 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-2xl p-6 border border-green-200 dark:border-green-800 shadow-lg">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-2xl p-4 border border-green-200 dark:border-green-800 shadow-lg">
+            <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+              <div className="flex items-center gap-3 w-full md:w-auto">
                 <div className="relative flex-1 md:w-80">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
                   <Input
@@ -217,7 +217,7 @@ export default function ProfilesPage() {
       </section>
 
       {/* Profiles Grid */}
-      <section className="py-16 bg-gradient-to-br from-green-50/30 via-emerald-50/20 to-teal-50/30 dark:from-green-950/20 dark:via-emerald-950/10 dark:to-teal-950/20 relative overflow-hidden">
+      <section className="py-8 bg-gradient-to-br from-green-50/30 via-emerald-50/20 to-teal-50/30 dark:from-green-950/20 dark:via-emerald-950/10 dark:to-teal-950/20 relative overflow-hidden">
         {/* Animated Background Tennis Elements */}
         <div className="absolute inset-0 opacity-10 dark:opacity-20">
           <div className="absolute top-20 left-10 w-32 h-32 border-4 border-green-500 rounded-full animate-float"></div>
@@ -296,7 +296,7 @@ export default function ProfilesPage() {
             </div>
           ) : (
             <Card className="col-span-full">
-              <CardContent className="text-center py-12">
+              <CardContent className="text-center py-8">
                 <Users className="h-12 w-12 text-green-500 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {searchTerm || categoryFilter !== "all" ? "No players found" : "No players yet"}
