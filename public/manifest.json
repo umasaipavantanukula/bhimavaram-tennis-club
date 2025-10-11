@@ -1,0 +1,33 @@
+{
+  "name": "Bhimavaram Tennis Club - Live Scores",
+  "short_name": "Tennis Live",
+  "description": "Live tennis scores from Bhimavaram Tennis Club",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e40af",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment"],
+  "screenshots": [
+    {
+      "src": "/tennis-court-aerial-view-with-green-surface-and-wh.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    }
+  ]
+}
