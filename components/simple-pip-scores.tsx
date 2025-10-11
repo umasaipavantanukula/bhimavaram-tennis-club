@@ -19,6 +19,7 @@ import {
   PictureInPicture2
 } from "lucide-react"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
+import { getCurrentOrRecentMatches, formatDate } from "@/lib/date-utils"
 
 interface SimplePiPProps {
   isOpen: boolean
@@ -72,7 +73,8 @@ export function SimplePiPScores({ isOpen, onClose }: SimplePiPProps) {
   const loadLiveMatches = async () => {
     try {
       const matches = await matchOperations.getAll()
-      const live = matches
+      // Use date utility to get current or recent matches
+      const filtered = getCurrentOrRecentMatches(matches)
         .filter(match => match.status === "live" || match.status === "upcoming")
         .map(match => ({
           ...match,
@@ -81,20 +83,21 @@ export function SimplePiPScores({ isOpen, onClose }: SimplePiPProps) {
           gameScore: generateGameScore(),
           serverPlayer: Math.random() > 0.5 ? 1 : 2 as 1 | 2
         }))
-      
-      setLiveMatches(live)
-      if (live.length === 0) {
+
+      setLiveMatches(filtered)
+      if (filtered.length === 0) {
+        const today = new Date()
         const demoMatches: LiveMatch[] = [
           {
             id: "demo-1",
             player1: "Rafael Nadal",
             player2: "Novak Djokovic",
             score: "6-4, 3-2",
-            date: new Date(),
+            date: today,
             tournament: "Bhimavaram Open",
             status: "live",
             court: "Center Court",
-            createdAt: new Date(),
+            createdAt: today,
             isLive: true,
             currentSet: "Set 2",
             gameScore: "40-30",
@@ -164,7 +167,8 @@ export function SimplePiPScores({ isOpen, onClose }: SimplePiPProps) {
             <h2 style="margin: 0 0 10px 0; font-size: 18px;">🏆 Live Tennis Scores</h2>
             <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
               <div style="font-size: 14px; margin-bottom: 5px;">${liveMatches[0]?.tournament || 'Bhimavaram Open'}</div>
-              <div style="font-size: 12px; opacity: 0.8; margin-bottom: 10px;">${liveMatches[0]?.court || 'Center Court'}</div>
+              <div style="font-size: 12px; opacity: 0.8; margin-bottom: 5px;">${liveMatches[0]?.court || 'Center Court'}</div>
+              <div style="font-size: 12px; opacity: 0.7; margin-bottom: 10px;">${formatDate(liveMatches[0]?.date || new Date())}</div>
               <div style="font-size: 16px; margin-bottom: 5px;">${liveMatches[0]?.player1 || 'Rafael Nadal'}</div>
               <div style="font-size: 16px; margin-bottom: 10px;">${liveMatches[0]?.player2 || 'Novak Djokovic'}</div>
               <div style="font-size: 20px; font-weight: bold; color: #fbbf24;">${liveMatches[0]?.score || '6-4, 3-2'}</div>
@@ -312,6 +316,7 @@ export function SimplePiPScores({ isOpen, onClose }: SimplePiPProps) {
                   {currentMatch.tournament}
                 </h3>
                 <p className="text-xs text-gray-500">{currentMatch.court}</p>
+                <p className="text-xs text-gray-400 mt-1">{formatDate(currentMatch.date)}</p>
               </div>
 
               <div className="space-y-2">

@@ -19,6 +19,7 @@ import {
   PictureInPicture
 } from "lucide-react"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
+import { getCurrentOrRecentMatches, formatDate } from "@/lib/date-utils"
 
 interface NativePiPProps {
   isOpen: boolean
@@ -78,7 +79,8 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
   const loadLiveMatches = async () => {
     try {
       const matches = await matchOperations.getAll()
-      const live = matches
+      // Use date utility to get current or recent matches
+      const filtered = getCurrentOrRecentMatches(matches)
         .filter(match => match.status === "live" || match.status === "upcoming")
         .map(match => ({
           ...match,
@@ -87,21 +89,22 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
           gameScore: generateGameScore(),
           serverPlayer: Math.random() > 0.5 ? 1 : 2 as 1 | 2
         }))
-      
-      setLiveMatches(live)
-      if (live.length === 0) {
-        // Create demo matches
+
+      setLiveMatches(filtered)
+      if (filtered.length === 0) {
+        // Create demo matches with today's date
+        const today = new Date()
         const demoMatches: LiveMatch[] = [
           {
             id: "demo-1",
             player1: "Rafael Nadal",
             player2: "Novak Djokovic",
             score: "6-4, 3-2",
-            date: new Date(),
+            date: today,
             tournament: "Bhimavaram Open",
             status: "live",
             court: "Center Court",
-            createdAt: new Date(),
+            createdAt: today,
             isLive: true,
             currentSet: "Set 2",
             gameScore: "40-30",
@@ -112,11 +115,11 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
             player1: "Serena Williams",
             player2: "Maria Sharapova",
             score: "7-6, 6-4",
-            date: new Date(),
+            date: today,
             tournament: "Club Championship",
             status: "live",
             court: "Court 2",
-            createdAt: new Date(),
+            createdAt: today,
             isLive: true,
             currentSet: "Match Point",
             gameScore: "Match",
@@ -150,7 +153,7 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const currentMatch = liveMatches[selectedMatchIndex]
+  const currentMatch = liveMatches[selectedMatchIndex]
     if (!currentMatch) return
 
     // Set canvas size
@@ -173,10 +176,14 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
     ctx.textAlign = 'center'
     ctx.fillText('Live Tennis Scores', canvas.width / 2, 30)
 
-    // Tournament
-    ctx.font = '14px Arial'
-    ctx.fillText(currentMatch.tournament, canvas.width / 2, 55)
-    ctx.fillText(currentMatch.court || '', canvas.width / 2, 75)
+  // Tournament
+  ctx.font = '14px Arial'
+  ctx.fillText(currentMatch.tournament, canvas.width / 2, 55)
+  ctx.fillText(currentMatch.court || '', canvas.width / 2, 75)
+  // Date
+  ctx.font = '12px Arial'
+  ctx.fillStyle = '#d1d5db'
+  ctx.fillText(formatDate(currentMatch.date), canvas.width / 2, 95)
 
     // Players
     ctx.font = 'bold 16px Arial'
@@ -472,6 +479,7 @@ export function NativePiPScores({ isOpen, onClose }: NativePiPProps) {
                       {currentMatch.tournament}
                     </h3>
                     <p className="text-xs text-gray-500">{currentMatch.court}</p>
+                    <p className="text-xs text-gray-400 mt-1">{formatDate(currentMatch.date)}</p>
                   </div>
 
                   {/* Players and Score */}

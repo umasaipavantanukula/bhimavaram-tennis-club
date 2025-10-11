@@ -15,6 +15,7 @@ import {
   RotateCcw
 } from "lucide-react"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
+import { getCurrentOrRecentMatches, formatDate } from "@/lib/date-utils"
 
 interface LiveMatch extends Match {
   isLive: boolean
@@ -55,7 +56,8 @@ export default function StandaloneScores() {
   const loadLiveMatches = async () => {
     try {
       const matches = await matchOperations.getAll()
-      const live = matches
+      // Use date utility to get current or recent matches
+      const filtered = getCurrentOrRecentMatches(matches)
         .filter(match => match.status === "live" || match.status === "upcoming")
         .map(match => ({
           ...match,
@@ -65,20 +67,21 @@ export default function StandaloneScores() {
           serverPlayer: Math.random() > 0.5 ? 1 : 2 as 1 | 2
         }))
       
-      setLiveMatches(live)
-      if (live.length === 0) {
-        // Create demo matches
+      setLiveMatches(filtered)
+      if (filtered.length === 0) {
+        // Create demo matches with today's date
+        const today = new Date()
         const demoMatches: LiveMatch[] = [
           {
             id: "demo-1",
             player1: "Rafael Nadal",
             player2: "Novak Djokovic",
             score: "6-4, 3-2",
-            date: new Date(),
+            date: today,
             tournament: "Bhimavaram Open",
             status: "live",
             court: "Center Court",
-            createdAt: new Date(),
+            createdAt: today,
             isLive: true,
             currentSet: "Set 2",
             gameScore: "40-30",
@@ -89,11 +92,11 @@ export default function StandaloneScores() {
             player1: "Serena Williams",
             player2: "Maria Sharapova",
             score: "7-6, 6-4",
-            date: new Date(),
+            date: today,
             tournament: "Club Championship",
             status: "live",
             court: "Court 2",
-            createdAt: new Date(),
+            createdAt: today,
             isLive: true,
             currentSet: "Match Point",
             gameScore: "Match",
@@ -208,6 +211,7 @@ export default function StandaloneScores() {
                     {currentMatch.tournament}
                   </h1>
                   <p className="text-gray-300">{currentMatch.court}</p>
+                  <p className="text-sm text-gray-400 mt-1">{formatDate(currentMatch.date)}</p>
                 </div>
 
                 {/* Players */}
