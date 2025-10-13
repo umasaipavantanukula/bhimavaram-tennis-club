@@ -23,9 +23,11 @@ export function Navigation() {
 
   const navItems = [
     { href: "/", label: "Home" },
+    { href: "/tournaments", label: "Matches" },
     // { href: "/events", label: "Events" },
     { href: "/profiles", label: "Players" },
     { href: "/rankings", label: "Rankings" },
+   
     { href: "/gallery", label: "Gallery" },
     { href: "/highlights", label: "Highlights" },
     // { href: "/news", label: "News" },

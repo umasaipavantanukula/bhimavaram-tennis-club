@@ -87,21 +87,73 @@ export interface PlayerProfile {
   id?: string
   name: string
   age: number
-  ranking?: number
+  ranking?: number | null
   achievements: string[]
   bio: string
   imageUrl?: string
   category: "junior" | "senior" | "veteran"
+  // Tennis Statistics (optional for backwards compatibility)
+  matchesPlayed?: number
+  matchesWon?: number
+  winPercentage?: number
+  setsWon?: number
+  setsLost?: number
+  gamesWon?: number
+  gamesLost?: number
+  currentStreak?: number
+  longestStreak?: number
+  points?: number
+  // Performance Stats (optional for backwards compatibility)
+  servingPercentage?: number
+  acesServed?: number
+  doubleFaults?: number
+  breakPointsSaved?: number
+  breakPointsConverted?: number
   createdAt: Date
 }
 
 export const profileOperations = {
   async create(profile: Omit<PlayerProfile, "id" | "createdAt">) {
     const database = ensureDb()
-    const docRef = await addDoc(collection(database, "profiles"), {
-      ...profile,
+    
+    // Ensure all required tennis statistics have default values and remove undefined values
+    const cleanProfile: any = {
+      name: profile.name,
+      age: profile.age,
+      achievements: profile.achievements || [],
+      bio: profile.bio,
+      category: profile.category,
+      matchesPlayed: profile.matchesPlayed ?? 0,
+      matchesWon: profile.matchesWon ?? 0,
+      winPercentage: profile.winPercentage ?? 0,
+      setsWon: profile.setsWon ?? 0,
+      setsLost: profile.setsLost ?? 0,
+      gamesWon: profile.gamesWon ?? 0,
+      gamesLost: profile.gamesLost ?? 0,
+      currentStreak: profile.currentStreak ?? 0,
+      longestStreak: profile.longestStreak ?? 0,
+      points: profile.points ?? 0,
+      servingPercentage: profile.servingPercentage ?? 0,
+      acesServed: profile.acesServed ?? 0,
+      doubleFaults: profile.doubleFaults ?? 0,
+      breakPointsSaved: profile.breakPointsSaved ?? 0,
+      breakPointsConverted: profile.breakPointsConverted ?? 0,
       createdAt: Timestamp.now(),
-    })
+    }
+
+    // Only add optional fields if they have valid values
+    if (profile.ranking && profile.ranking > 0) {
+      cleanProfile.ranking = profile.ranking
+    }
+
+    if (profile.imageUrl) {
+      cleanProfile.imageUrl = profile.imageUrl
+    }
+    
+    console.log("Creating profile with cleaned data:", cleanProfile)
+    
+    const docRef = await addDoc(collection(database, "profiles"), cleanProfile)
+    console.log("Profile created successfully with ID:", docRef.id)
     return docRef.id
   },
 
@@ -109,11 +161,30 @@ export const profileOperations = {
     const database = ensureDb()
     const q = query(collection(database, "profiles"), orderBy("createdAt", "desc"))
     const snapshot = await getDocs(q)
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt.toDate(),
-    })) as PlayerProfile[]
+    return snapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt.toDate(),
+        // Provide default values for tennis statistics if missing
+        matchesPlayed: data.matchesPlayed ?? 0,
+        matchesWon: data.matchesWon ?? 0,
+        winPercentage: data.winPercentage ?? 0,
+        setsWon: data.setsWon ?? 0,
+        setsLost: data.setsLost ?? 0,
+        gamesWon: data.gamesWon ?? 0,
+        gamesLost: data.gamesLost ?? 0,
+        currentStreak: data.currentStreak ?? 0,
+        longestStreak: data.longestStreak ?? 0,
+        points: data.points ?? 0,
+        servingPercentage: data.servingPercentage ?? 0,
+        acesServed: data.acesServed ?? 0,
+        doubleFaults: data.doubleFaults ?? 0,
+        breakPointsSaved: data.breakPointsSaved ?? 0,
+        breakPointsConverted: data.breakPointsConverted ?? 0,
+      }
+    }) as PlayerProfile[]
   },
 
   async update(id: string, profile: Partial<PlayerProfile>) {
@@ -301,6 +372,44 @@ export const eventOperations = {
 
 // File upload operations (Base64 with automatic compression)
 export const uploadOperations = {
+  async uploadVideo(file: File, path: string): Promise<string> {
+    try {
+      const firebaseStorage = ensureStorage()
+      console.log("[v0] Starting video upload:", file.name)
+      console.log("[v0] File size:", (file.size / 1024 / 1024).toFixed(2), "MB")
+
+      // Validate file type
+      if (!file.type.startsWith('video/')) {
+        throw new Error("Only video files are allowed.")
+      }
+
+      // Check file size (limit to 100MB)
+      const maxSize = 100 * 1024 * 1024 // 100MB
+      if (file.size > maxSize) {
+        throw new Error("Video file is too large. Maximum size is 100MB.")
+      }
+
+      // Create a unique filename
+      const timestamp = Date.now()
+      const filename = `${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+      const fullPath = `${path}/${filename}`
+
+      // Upload to Firebase Storage
+      const storageRef = ref(firebaseStorage, fullPath)
+      const snapshot = await uploadBytes(storageRef, file)
+      
+      // Get download URL
+      const downloadURL = await getDownloadURL(snapshot.ref)
+      
+      console.log("[v0] Video upload successful:", downloadURL)
+      return downloadURL
+
+    } catch (error: any) {
+      console.error("[v0] Video upload error:", error)
+      throw new Error(`❌ Video upload failed: ${error.message}`)
+    }
+  },
+
   async uploadImage(file: File, path: string): Promise<string> {
     try {
       console.log("[v0] Starting image upload:", file.name)
@@ -435,7 +544,7 @@ export const highlightsOperations = {
           date: data.date?.toDate ? data.date.toDate() : new Date(data.date),
           description: data.description || "",
           thumbnailUrl: data.thumbnailUrl || "/placeholder.jpg",
-          videoUrl: data.videoUrl,
+          videoUrl: data.videoUrl || "",
           imageUrls: data.imageUrls || [],
           matchType: data.matchType || "tournament",
           players: data.players || [],
@@ -451,7 +560,7 @@ export const highlightsOperations = {
           date: new Date(),
           description: data.description || "",
           thumbnailUrl: "/placeholder.jpg",
-          videoUrl: data.videoUrl,
+          videoUrl: data.videoUrl || "",
           imageUrls: [],
           matchType: "tournament",
           players: [],
@@ -479,7 +588,7 @@ export const highlightsOperations = {
       date: data.date.toDate(),
       description: data.description,
       thumbnailUrl: data.thumbnailUrl,
-      videoUrl: data.videoUrl,
+      videoUrl: data.videoUrl || "",
       imageUrls: data.imageUrls || [],
       matchType: data.matchType,
       players: data.players || [],
@@ -523,7 +632,7 @@ export const highlightsOperations = {
         date: data.date.toDate(),
         description: data.description,
         thumbnailUrl: data.thumbnailUrl,
-        videoUrl: data.videoUrl,
+        videoUrl: data.videoUrl || "",
         imageUrls: data.imageUrls || [],
         matchType: data.matchType,
         players: data.players || [],
@@ -550,7 +659,7 @@ export const highlightsOperations = {
         date: data.date.toDate(),
         description: data.description,
         thumbnailUrl: data.thumbnailUrl,
-        videoUrl: data.videoUrl,
+        videoUrl: data.videoUrl || "",
         imageUrls: data.imageUrls || [],
         matchType: data.matchType,
         players: data.players || [],

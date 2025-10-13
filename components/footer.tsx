@@ -21,7 +21,7 @@ export function Footer() {
         </svg>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-8">
+      <div className="relative max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Club Info */}
           <div className="space-y-4 md:col-span-1 lg:pr-8">
@@ -108,7 +108,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Line */}
-        <div className="mt-10 border-t border-green-700 pt-5 text-center">
+        <div className="mt-6 border-t border-green-700 pt-3 text-center">
           <p className="text-xs text-green-200 tracking-wide">
             © 2025 Bhimavaram Tennis Club •
           </p>

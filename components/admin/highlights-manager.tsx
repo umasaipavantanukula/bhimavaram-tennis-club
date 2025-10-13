@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Video, Image, Plus, Edit, Trash2, Calendar, Users, Trophy, Star, Upload, X } from "lucide-react"
 import { toast } from "sonner"
-import { highlightsOperations, type MatchHighlight } from "@/lib/firebase-operations"
+import { highlightsOperations, uploadOperations, type MatchHighlight } from "@/lib/firebase-operations"
 
 export function HighlightsManager() {
   const [highlights, setHighlights] = useState<MatchHighlight[]>([])
@@ -20,6 +20,8 @@ export function HighlightsManager() {
   const [editingHighlight, setEditingHighlight] = useState<MatchHighlight | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false)
 
   useEffect(() => {
     loadHighlights()
@@ -48,7 +50,7 @@ export function HighlightsManager() {
     date: "",
     videoUrl: "",
     thumbnailUrl: "",
-    imageUrls: "",
+    imageUrls: [] as string[],
     featured: false
   })
 
@@ -62,7 +64,7 @@ export function HighlightsManager() {
       date: "",
       videoUrl: "",
       thumbnailUrl: "",
-      imageUrls: "",
+      imageUrls: [],
       featured: false
     })
     setEditingHighlight(null)
@@ -75,7 +77,7 @@ export function HighlightsManager() {
 
     try {
       const playersArray = formData.players.split(",").map(p => p.trim()).filter(p => p)
-      const imageUrlsArray = formData.imageUrls.split(",").map(url => url.trim()).filter(url => url)
+      const imageUrlsArray = formData.imageUrls
 
       const highlightData: any = {
         title: formData.title,
@@ -85,13 +87,9 @@ export function HighlightsManager() {
         players: playersArray,
         score: "Match", // Default value since score field is removed
         thumbnailUrl: formData.thumbnailUrl || "/placeholder.jpg",
+        videoUrl: formData.videoUrl.trim(), // Always include videoUrl field, even if empty
         imageUrls: imageUrlsArray,
         featured: formData.featured
-      }
-
-      // Only add videoUrl if it has a value
-      if (formData.videoUrl && formData.videoUrl.trim() !== '') {
-        highlightData.videoUrl = formData.videoUrl
       }
 
       if (editingHighlight && editingHighlight.id) {
@@ -127,7 +125,7 @@ export function HighlightsManager() {
       date: highlight.date.toISOString().split('T')[0],
       videoUrl: highlight.videoUrl || "",
       thumbnailUrl: highlight.thumbnailUrl,
-      imageUrls: highlight.imageUrls.join(", "),
+      imageUrls: highlight.imageUrls,
       featured: highlight.featured
     })
     setIsDialogOpen(true)
@@ -268,23 +266,59 @@ export function HighlightsManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="imageFile">Choose Image</Label>
+                  <Label htmlFor="thumbnailFile">Thumbnail Image</Label>
                   <Input
-                    id="imageFile"
+                    id="thumbnailFile"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
+                    disabled={uploadingThumbnail}
+                    onChange={async (e) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        // For now, we'll use placeholder image
-                        // In production, you'd upload to Firebase Storage or Cloudinary
-                        setFormData(prev => ({ ...prev, thumbnailUrl: "/placeholder.jpg" }))
-                        toast.success(`Image selected: ${file.name}`)
+                        setUploadingThumbnail(true)
+                        try {
+                          toast.loading(`Uploading ${file.name}...`)
+                          
+                          // Upload thumbnail to Firebase Storage
+                          const thumbnailUrl = await uploadOperations.uploadImage(file, 'highlights/thumbnails')
+                          
+                          // Update form data with the download URL
+                          setFormData(prev => ({ ...prev, thumbnailUrl }))
+                          toast.success(`Thumbnail uploaded successfully!`)
+                          
+                        } catch (error: any) {
+                          console.error("Thumbnail upload error:", error)
+                          toast.error(error.message || "Failed to upload thumbnail")
+                        } finally {
+                          setUploadingThumbnail(false)
+                          // Clear the file input
+                          e.target.value = ""
+                        }
                       }
                     }}
                   />
+                  {uploadingThumbnail && (
+                    <div className="flex items-center gap-2 text-sm text-blue-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Uploading thumbnail...
+                    </div>
+                  )}
+                  {formData.thumbnailUrl && formData.thumbnailUrl !== "/placeholder.jpg" && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <Image className="h-4 w-4" />
+                      Thumbnail uploaded successfully
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData(prev => ({ ...prev, thumbnailUrl: "" }))}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
-                    Note: Images will use placeholder until proper storage is set up
+                    Maximum file size: 10MB. Supported formats: JPG, PNG, WebP
                   </p>
                 </div>
 
@@ -294,18 +328,66 @@ export function HighlightsManager() {
                     id="videoFile"
                     type="file"
                     accept="video/*"
-                    onChange={(e) => {
+                    disabled={uploadingVideo}
+                    onChange={async (e) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        // For now, we'll clear video URL since we can't store files yet
-                        // In production, you'd upload to Firebase Storage or Cloudinary
-                        setFormData(prev => ({ ...prev, videoUrl: "" }))
-                        toast.success(`Video selected: ${file.name}`)
+                        console.log("Starting video upload:", file.name, "Size:", file.size, "Type:", file.type)
+                        setUploadingVideo(true)
+                        
+                        try {
+                          // Dismiss any existing toasts
+                          toast.dismiss()
+                          const uploadToast = toast.loading(`Uploading ${file.name}...`)
+                          
+                          console.log("Calling uploadVideo operation...")
+                          // Upload video to Firebase Storage
+                          const videoUrl = await uploadOperations.uploadVideo(file, 'highlights/videos')
+                          console.log("Video uploaded successfully:", videoUrl)
+                          
+                          // Dismiss loading toast
+                          toast.dismiss(uploadToast)
+                          
+                          // Update form data with the download URL
+                          setFormData(prev => ({ ...prev, videoUrl }))
+                          toast.success(`Video uploaded successfully!`)
+                          
+                        } catch (error: any) {
+                          console.error("Video upload error:", error)
+                          toast.dismiss() // Clear any loading toasts
+                          toast.error(error.message || "Failed to upload video")
+                        } finally {
+                          setUploadingVideo(false)
+                          // Clear the file input
+                          if (e.target) {
+                            e.target.value = ""
+                          }
+                        }
                       }
                     }}
                   />
+                  {uploadingVideo && (
+                    <div className="flex items-center gap-2 text-sm text-blue-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      Uploading video...
+                    </div>
+                  )}
+                  {formData.videoUrl && (
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <Video className="h-4 w-4" />
+                      Video uploaded successfully
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData(prev => ({ ...prev, videoUrl: "" }))}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
-                    Note: Video upload requires proper storage setup
+                    Maximum file size: 100MB. Supported formats: MP4, WebM, AVI, MOV
                   </p>
                 </div>
               </div>
@@ -325,8 +407,11 @@ export function HighlightsManager() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? "Saving..." : (editingHighlight ? "Update" : "Add")} Highlight
+                <Button type="submit" disabled={isLoading || uploadingVideo || uploadingThumbnail}>
+                  {uploadingVideo ? "Uploading Video..." : 
+                   uploadingThumbnail ? "Uploading Thumbnail..." :
+                   isLoading ? "Saving..." : 
+                   (editingHighlight ? "Update" : "Add")} Highlight
                 </Button>
               </div>
             </form>
