@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Minimize2, Maximize2 } from "lucide-react"
+import { X, Minimize2, Maximize2, BarChart3 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
 
 export function FloatingPiPWidget() {
@@ -155,87 +155,62 @@ export function FloatingPiPWidget() {
       {!isPiPActive && (
         <div
           className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
-            isMinimized ? "w-16 h-16" : "w-[320px] sm:w-[380px]"
+            isMinimized ? "w-12 h-12" : "w-[240px]"
           }`}
           style={{
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
           }}
         >
           {isMinimized ? (
-            // Minimized view
+            // Minimized view - small circle
             <button
               onClick={() => setIsMinimized(false)}
-              className="w-full h-full bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-xl hover:scale-110 transition-transform shadow-lg"
+              className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold hover:scale-110 transition-transform shadow-lg"
             >
-              {currentMatch.score1}
+              <span className="text-sm">⚡</span>
             </button>
           ) : (
-            // Expanded view - Modern design matching the image
-            <div className="bg-black rounded-lg overflow-hidden shadow-2xl">
-              {/* Header with controls */}
-              <div className="flex justify-between items-center p-2 bg-gray-900">
-                <div className="flex items-center gap-2">
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-                    {currentMatch.status}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={togglePiP}
-                    className="text-white hover:text-teal-400 transition-colors p-1"
-                    title="Open in Picture-in-Picture"
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => setIsMinimized(true)}
-                    className="text-white hover:text-yellow-400 transition-colors p-1"
-                    title="Minimize"
-                  >
-                    <Minimize2 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={closePiP}
-                    className="text-white hover:text-red-400 transition-colors p-1"
-                    title="Close"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Main content */}
-              <div className="flex">
-                {/* Left side - Player info */}
-                <div className="flex-1 p-4 text-white">
-                  <div className="space-y-4">
-                    {/* Player 1 */}
-                    <div>
-                      <div className="text-lg font-bold">{currentMatch.player1}</div>
-                      <div className="text-sm text-gray-400">Player 1</div>
-                    </div>
-
-                    {/* Player 2 */}
-                    <div>
-                      <div className="text-lg font-bold">{currentMatch.player2}</div>
-                      <div className="text-sm text-gray-400">Player 2</div>
-                    </div>
-
-                    {/* Match info */}
-                    <div className="text-xs text-gray-400 mt-4">
-                      <div>{currentMatch.sets}</div>
-                      <div className="mt-1">15 Oct 2025</div>
-                    </div>
+            // Expanded view - Compact design matching the attached image
+            <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-blue-500 rounded-xl overflow-hidden shadow-2xl">
+              {/* Content */}
+              <div className="p-2.5 flex items-center gap-2.5">
+                {/* Left: Team Icon Circle */}
+                <div className="flex-shrink-0 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-[10px] font-bold">⚡</span>
                   </div>
                 </div>
 
-                {/* Right side - Score (Teal section) */}
-                <div className="w-32 bg-gradient-to-br from-teal-400 to-teal-600 flex flex-col items-center justify-center text-white">
-                  <div className="text-xs font-semibold mb-2">SCORE</div>
-                  <div className="text-5xl font-extrabold">{currentMatch.score1}</div>
-                  <div className="text-sm mt-2">{currentMatch.time}</div>
-                  <div className="text-xs mt-1 opacity-75">TEST</div>
+                {/* Center: Match Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-white font-bold text-xs truncate">
+                      {currentMatch.player1} vs {currentMatch.player2}
+                    </span>
+                  </div>
+                  <div className="text-white/90 text-[10px] font-medium">
+                    {currentMatch.score1} - {currentMatch.sets}
+                  </div>
                 </div>
+
+                {/* Right: Chart Icon Button */}
+                <button
+                  onClick={togglePiP}
+                  className="flex-shrink-0 w-7 h-7 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition-colors"
+                  title="Open in Picture-in-Picture"
+                >
+                  <BarChart3 className="h-3.5 w-3.5 text-white" />
+                </button>
+
+                {/* Close button */}
+                <button
+                  onClick={closePiP}
+                  className="flex-shrink-0 w-5 h-5 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                  title="Close"
+                >
+                  <X className="h-2.5 w-2.5 text-white" />
+                </button>
               </div>
             </div>
           )}
