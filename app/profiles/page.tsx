@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, Search, Trophy, Award, Star, Medal, Crown, Target } from "lucide-react"
 import { profileOperations, type PlayerProfile } from "@/lib/firebase-operations"
 
+// Version: 2.0 - Responsive Mobile Design
 export default function ProfilesPage() {
   const [profiles, setProfiles] = useState<PlayerProfile[]>([])
   const [filteredProfiles, setFilteredProfiles] = useState<PlayerProfile[]>([])

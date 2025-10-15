@@ -374,7 +374,7 @@ export function ProfilesManager() {
               Add Profile
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] sm:w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProfile ? "Edit Profile" : "Add New Profile"}</DialogTitle>
               <DialogDescription>
@@ -382,7 +382,7 @@ export function ProfilesManager() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Name *</Label>
                   <Input
@@ -409,7 +409,7 @@ export function ProfilesManager() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="ranking">Ranking (Optional - Auto-assigned if empty)</Label>
                   <Input
@@ -480,7 +480,7 @@ export function ProfilesManager() {
                 </div>
                 
                 {/* Basic Match Statistics */}
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div>
                     <Label htmlFor="matchesPlayed">Matches Played</Label>
                     <Input
@@ -527,7 +527,7 @@ export function ProfilesManager() {
                 </div>
 
                 {/* Sets and Games Statistics */}
-                <div className="grid grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                   <div>
                     <Label htmlFor="setsWon">Sets Won</Label>
                     <Input
@@ -571,7 +571,7 @@ export function ProfilesManager() {
                 </div>
 
                 {/* Performance Statistics */}
-                <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div>
                     <Label htmlFor="servingPercentage">Serve % (First)</Label>
                     <Input
@@ -607,7 +607,7 @@ export function ProfilesManager() {
                 </div>
 
                 {/* Break Points and Streaks */}
-                <div className="grid grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                   <div>
                     <Label htmlFor="breakPointsSaved">BP Saved</Label>
                     <Input

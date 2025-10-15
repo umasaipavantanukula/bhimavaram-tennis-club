@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cache Buster Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        .version {
+            font-size: 48px;
+            color: #10b981;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .instructions {
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #10b981;
+        }
+        .button {
+            background: #10b981;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .button:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Bhimavaram Tennis Club</h1>
+    <div class="version">
+        Version 2.0 - Mobile Responsive
+    </div>
+    
+    <div class="instructions">
+        <h2>✅ If you see "Version 2.0" above:</h2>
+        <p>Your cache is cleared! Go to the profiles page:</p>
+        <button class="button" onclick="window.location.href='/profiles'">
+            Open Profiles Page
+        </button>
+    </div>
+
+    <div class="instructions">
+        <h2>❌ If you see "Version 1.0" or old version:</h2>
+        <p>Your browser is still cached. Clear cache by:</p>
+        <ol style="text-align: left; max-width: 400px; margin: 20px auto;">
+            <li><strong>Chrome/Edge:</strong> Ctrl+Shift+Delete</li>
+            <li>Select "Cached images and files"</li>
+            <li>Click "Clear data"</li>
+            <li>Hard refresh: Ctrl+Shift+R</li>
+        </ol>
+        <button class="button" onclick="location.reload(true)">
+            Hard Refresh This Page
+        </button>
+    </div>
+
+    <div class="instructions">
+        <h2>🔧 Quick Cache Clear</h2>
+        <button class="button" onclick="clearCache()">
+            Clear Cache Now
+        </button>
+    </div>
+
+    <script>
+        // Display current time to verify no caching
+        document.body.innerHTML += '<p style="color: #666;">Page loaded at: ' + new Date().toLocaleTimeString() + '</p>';
+
+        function clearCache() {
+            // Clear all caches
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    names.forEach(function(name) {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            // Unregister service workers
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    registrations.forEach(function(registration) {
+                        registration.unregister();
+                    });
+                });
+            }
+            
+            alert('Cache cleared! Refreshing page...');
+            setTimeout(function() {
+                window.location.reload(true);
+            }, 500);
+        }
+
+        // Add timestamp to prevent caching
+        console.log('Page version: 2.0 - Loaded at', new Date().toISOString());
+    </script>
+</body>
+</html>

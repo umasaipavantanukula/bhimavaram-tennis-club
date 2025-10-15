@@ -179,7 +179,7 @@ export function GalleryManager() {
               Add Photo
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] sm:w-full max-w-md">
             <DialogHeader>
               <DialogTitle>{editingItem ? "Edit Photo" : "Add New Photo"}</DialogTitle>
               <DialogDescription>
