@@ -261,26 +261,29 @@ export default function TournamentsPage() {
                 return (
                 <Card key={match.id} className="bg-white border border-gray-200 hover:shadow-md transition-shadow">
                     <CardContent className="p-0">
-                      {/* Match Header */}
-                      <div className="bg-gray-50 px-6 py-3 border-b border-gray-100">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 ${statusColor} rounded-full`}></div>
+                      {/* Match Header - Mobile Responsive */}
+                      <div className="bg-gray-50 px-4 sm:px-6 py-3 border-b border-gray-100">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <div className={`w-2 h-2 ${statusColor} rounded-full flex-shrink-0`}></div>
                             <Badge 
                               variant={actualStatus === "live" ? "destructive" : actualStatus === "upcoming" ? "default" : "secondary"}
                               className={`text-xs ${actualStatus === "live" ? "animate-pulse" : ""}`}
                             >
                               {statusText}
                             </Badge>
-                            <span className="font-medium text-gray-700">{match.court || "Tennis Court"}, {match.tournament}</span>
+                            <span className="font-medium text-gray-700 text-sm sm:text-base">
+                              {match.court || "Tennis Court"}, {match.tournament}
+                            </span>
                           </div>
-                          <span className="text-sm text-gray-500">{formatDate(match.date)}</span>
+                          <span className="text-xs sm:text-sm text-gray-500">{formatDate(match.date)}</span>
                         </div>
                       </div>
 
-                      {/* Match Details - Clean Horizontal Layout */}
-                      <div className="px-8 py-8">
-                        <div className="flex items-center justify-center gap-6">
+                      {/* Match Details - Responsive Layout */}
+                      <div className="px-4 sm:px-8 py-6 sm:py-8">
+                        {/* Desktop Layout - Horizontal */}
+                        <div className="hidden md:flex items-center justify-center gap-6">
                           {/* Player 1 Section */}
                           <div className="flex items-center gap-4">
                             {/* Player 1 Photo - Medium Size */}
@@ -353,30 +356,89 @@ export default function TournamentsPage() {
                               )}
                             </div>
                           </div>
+                        </div>
 
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-3 ml-8">
-                            {actualStatus === "completed" && (
-                              <Button variant="outline" size="sm" className="p-3">
-                                <BarChart3 className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {actualStatus !== "upcoming" && (
-                              <Button variant="outline" size="sm" className="p-3">
-                                <Play className="h-4 w-4" />
-                              </Button>
-                            )}
-                            <Button 
-                              className={`px-4 py-2 text-white ${
-                                actualStatus === "live" ? "bg-red-500 hover:bg-red-600 animate-pulse" :
-                                actualStatus === "upcoming" ? "bg-blue-500 hover:bg-blue-600" :
-                                "bg-green-500 hover:bg-green-600"
-                              }`}
-                            >
-                              {actualStatus === "live" ? "LIVE NOW" :
-                               actualStatus === "upcoming" ? "View Details" :
-                               "Match Centre"}
-                            </Button>
+                        {/* Mobile Layout - Vertical */}
+                        <div className="md:hidden space-y-6">
+                          {/* Player 1 */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {/* Player 1 Photo */}
+                              <div className="w-14 h-14 rounded-full overflow-hidden border-3 border-blue-300 shadow-md">
+                                {getPlayerImage(match.player1) ? (
+                                  <img 
+                                    src={getPlayerImage(match.player1)!} 
+                                    alt={match.player1}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                    <span className="text-white font-bold text-base">
+                                      {getPlayerInitials(match.player1)}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Player 1 Details */}
+                              <div>
+                                <div className="font-bold text-gray-900 text-sm">{match.player1}</div>
+                                <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
+                              </div>
+                            </div>
+                            
+                            {/* Player 1 Score */}
+                            <div className="text-3xl font-extrabold text-green-600">
+                              {actualStatus === "upcoming" ? "-" : (player1Score || "0")}
+                            </div>
+                          </div>
+
+                          {/* VS Divider */}
+                          <div className="flex items-center justify-center py-2">
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                            <div className="px-4 flex flex-col items-center">
+                              <div className="text-xl font-black text-gray-400 tracking-wider">VS</div>
+                              {actualStatus === "live" && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping"></div>
+                                  <span className="text-xs font-bold text-red-500 uppercase">Live</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 h-px bg-gray-300"></div>
+                          </div>
+
+                          {/* Player 2 */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {/* Player 2 Photo */}
+                              <div className="w-14 h-14 rounded-full overflow-hidden border-3 border-red-300 shadow-md">
+                                {getPlayerImage(match.player2) ? (
+                                  <img 
+                                    src={getPlayerImage(match.player2)!} 
+                                    alt={match.player2}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                                    <span className="text-white font-bold text-base">
+                                      {getPlayerInitials(match.player2)}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Player 2 Details */}
+                              <div>
+                                <div className="font-bold text-gray-900 text-sm">{match.player2}</div>
+                                <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
+                              </div>
+                            </div>
+                            
+                            {/* Player 2 Score */}
+                            <div className="text-3xl font-extrabold text-green-600">
+                              {actualStatus === "upcoming" ? "-" : (player2Score || "0")}
+                            </div>
                           </div>
                         </div>
                       </div>
