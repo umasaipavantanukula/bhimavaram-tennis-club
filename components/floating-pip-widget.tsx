@@ -10,6 +10,8 @@ export function FloatingPiPWidget() {
   const [isPiPActive, setIsPiPActive] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const logoImgRef = useRef<HTMLImageElement | null>(null)
+  const [logoLoaded, setLogoLoaded] = useState(false)
 
   // Mock match data (replace with real data from your context/API)
   const currentMatch = {
@@ -21,6 +23,21 @@ export function FloatingPiPWidget() {
     status: "LIVE",
     time: "18:06"
   }
+
+  // Load logo once when component mounts
+  useEffect(() => {
+    const logoImg = new Image()
+    logoImg.crossOrigin = 'anonymous'
+    logoImg.onload = () => {
+      logoImgRef.current = logoImg
+      setLogoLoaded(true)
+    }
+    logoImg.onerror = () => {
+      logoImgRef.current = null
+      setLogoLoaded(true)
+    }
+    logoImg.src = '/logo.png'
+  }, [])
 
   useEffect(() => {
     if (!isOpen) {
@@ -36,47 +53,196 @@ export function FloatingPiPWidget() {
     if (!ctx) return
 
     // Set canvas size
-    canvas.width = 400
-    canvas.height = 300
+    canvas.width = 420
+    canvas.height = 280
 
-    // Clear canvas
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    // Draw immediately with cached logo (or without if not loaded)
+    drawCanvasContent(ctx, canvas, logoImgRef.current)
+  }
 
-    // Draw LIVE indicator
-    ctx.fillStyle = "#ef4444"
-    ctx.fillRect(20, 20, 80, 30)
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 16px Arial"
-    ctx.fillText("LIVE", 35, 42)
+  const drawCanvasContent = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, logoImg: HTMLImageElement | null) => {
 
-    // Draw SCORE section background
-    ctx.fillStyle = "#14b8a6"
-    ctx.fillRect(220, 80, 160, 140)
+    // Helper function for rounded rectangles
+    const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath()
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w, y + h - r)
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+      ctx.lineTo(x + r, y + h)
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
+      ctx.closePath()
+    }
 
-    // Draw "SCORE" text
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 14px Arial"
-    ctx.fillText("SCORE", 265, 105)
+    // Create gradient background
+    const bgGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+    bgGradient.addColorStop(0, '#1e293b')
+    bgGradient.addColorStop(0.5, '#334155')
+    bgGradient.addColorStop(1, '#0f172a')
+    
+    // Fill background with gradient
+    ctx.fillStyle = bgGradient
+    drawRoundedRect(0, 0, canvas.width, canvas.height, 16)
+    ctx.fill()
 
-    // Draw main score
-    ctx.font = "bold 72px Arial"
-    ctx.fillText(currentMatch.score1, 260, 175)
+    // Add subtle border
+    ctx.strokeStyle = '#10b981'
+    ctx.lineWidth = 2
+    drawRoundedRect(1, 1, canvas.width - 2, canvas.height - 2, 15)
+    ctx.stroke()
 
-    // Draw time
-    ctx.font = "16px Arial"
-    ctx.fillText(currentMatch.time, 260, 205)
+    // Header section with logo area
+    const headerGradient = ctx.createLinearGradient(0, 0, canvas.width, 60)
+    headerGradient.addColorStop(0, '#059669')
+    headerGradient.addColorStop(1, '#0d9488')
+    ctx.fillStyle = headerGradient
+    drawRoundedRect(8, 8, canvas.width - 16, 52, 12)
+    ctx.fill()
 
-    // Draw player names
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 24px Arial"
-    ctx.fillText(currentMatch.player1, 20, 100)
-    ctx.fillText(currentMatch.player2, 20, 180)
+    // Tournament title
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 16px Arial, sans-serif'
+    ctx.fillText('BHIMAVARAM OPEN', 60, 35)
 
-    // Draw match info
-    ctx.font = "14px Arial"
-    ctx.fillText(currentMatch.sets, 20, 250)
-    ctx.fillText("15 Oct 2025", 20, 280)
+    // Draw logo background circle
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(35, 35, 20, 0, 2 * Math.PI)
+    ctx.fill()
+    
+    // Draw the PNG logo if loaded, otherwise draw fallback
+    if (logoImg) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(35, 35, 18, 0, 2 * Math.PI)
+      ctx.clip()
+      ctx.drawImage(logoImg, 17, 17, 36, 36)
+      ctx.restore()
+    } else {
+      // Fallback design
+      ctx.fillStyle = '#b7098cff'
+      ctx.beginPath()
+      ctx.arc(35, 35, 16, 0, 2 * Math.PI)
+      ctx.fill()
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 16px Arial'  
+      ctx.textAlign = 'center'
+      ctx.fillText('🎾', 35, 40)
+      ctx.textAlign = 'left'
+    }
+
+    // LIVE indicator
+    if (currentMatch.status === 'LIVE') {
+      ctx.fillStyle = '#ef4444'
+      drawRoundedRect(15, 80, 50, 25, 8)
+      ctx.fill()
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 12px Arial'
+      ctx.fillText('LIVE', 25, 97)
+      
+      // Pulsing dot
+      ctx.fillStyle = '#ef4444'
+      ctx.beginPath()
+      ctx.arc(72, 92, 4, 0, 2 * Math.PI)
+      ctx.fill()
+    }
+
+    // Player 1
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.8)'
+    drawRoundedRect(15, 120, 180, 40, 8)
+    ctx.fill()
+    
+    ctx.strokeStyle = '#10b981'
+    ctx.lineWidth = 1
+    drawRoundedRect(15, 120, 180, 40, 8)
+    ctx.stroke()
+    
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 16px Arial'
+    ctx.fillText(currentMatch.player1, 25, 145)
+    
+    // Player 2
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.8)'
+    drawRoundedRect(15, 170, 180, 40, 8)
+    ctx.fill()
+    
+    ctx.strokeStyle = '#10b981'
+    ctx.lineWidth = 1
+    drawRoundedRect(15, 170, 180, 40, 8)
+    ctx.stroke()
+    
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 16px Arial'
+    ctx.fillText(currentMatch.player2, 25, 195)
+
+    // Score panel with attractive gradient
+    const scoreGradient = ctx.createLinearGradient(220, 80, 420, 220)
+    scoreGradient.addColorStop(0, '#10b981')
+    scoreGradient.addColorStop(0.5, '#059669')
+    scoreGradient.addColorStop(1, '#047857')
+    
+    ctx.fillStyle = scoreGradient
+    drawRoundedRect(220, 80, 185, 140, 12)
+    ctx.fill()
+
+    // Score panel border glow
+    ctx.shadowColor = '#10b981'
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = '#34d399'
+    ctx.lineWidth = 2
+    drawRoundedRect(220, 80, 185, 140, 12)
+    ctx.stroke()
+    ctx.shadowBlur = 0
+
+    // "SCORE" label
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+    ctx.font = 'bold 14px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('SCORE', 312, 105)
+
+    // Main score with shadow effect
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+    ctx.shadowOffsetX = 2
+    ctx.shadowOffsetY = 2
+    ctx.shadowBlur = 4
+    
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 48px Arial'
+    ctx.fillText(currentMatch.score1, 312, 160)
+    
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    ctx.shadowBlur = 0
+
+    // Time
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+    ctx.font = '14px Arial'
+    ctx.fillText(currentMatch.time, 312, 185)
+
+    // Set info
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+    ctx.font = '12px Arial'
+    ctx.fillText(currentMatch.sets, 312, 205)
+
+    // Footer with date
+    ctx.fillStyle = 'rgba(30, 41, 59, 0.6)'
+    drawRoundedRect(15, 235, canvas.width - 30, 30, 8)
+    ctx.fill()
+    
+    ctx.fillStyle = '#10b981'
+    ctx.font = '11px Arial'
+    ctx.textAlign = 'left'
+    ctx.fillText('Oct 15, 2025', 25, 252)
+    
+    ctx.textAlign = 'right'
+    ctx.fillText('Tournament Match', canvas.width - 25, 252)
+    
+    ctx.textAlign = 'left'
   }
 
   const enterPiP = async () => {
@@ -86,11 +252,17 @@ export function FloatingPiPWidget() {
       
       if (!video || !canvas) return
 
+      // Wait for logo to be loaded before drawing
+      if (!logoLoaded) {
+        // If logo is still loading, wait a bit
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
       // Draw score to canvas
       drawScoreToCanvas()
 
-      // Capture canvas stream
-      const stream = canvas.captureStream(30)
+      // Capture canvas stream with a lower frame rate to prevent flickering
+      const stream = canvas.captureStream(1) // 1 FPS instead of 30
       video.srcObject = stream
 
       // Enter Picture-in-Picture
@@ -126,14 +298,18 @@ export function FloatingPiPWidget() {
 
   // Update canvas periodically (e.g., when score changes)
   useEffect(() => {
-    if (isPiPActive) {
+    if (isPiPActive && logoLoaded) {
+      // Initial draw
+      drawScoreToCanvas()
+      
+      // Then update every 5 seconds (less frequent to reduce flickering)
       const interval = setInterval(() => {
         drawScoreToCanvas()
-      }, 1000) // Update every second
+      }, 5000) // Update every 5 seconds instead of 1
 
       return () => clearInterval(interval)
     }
-  }, [isPiPActive, currentMatch])
+  }, [isPiPActive, currentMatch, logoLoaded])
 
   if (!isOpen) return null
 
@@ -162,23 +338,41 @@ export function FloatingPiPWidget() {
           }}
         >
           {isMinimized ? (
-            // Minimized view - small circle
+            // Minimized view - small circle with logo
             <button
               onClick={() => setIsMinimized(false)}
-              className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold hover:scale-110 transition-transform shadow-lg"
+              className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold hover:scale-110 transition-transform shadow-lg overflow-hidden"
             >
-              <span className="text-sm">⚡</span>
+              <img 
+                src="/logo.png" 
+                alt="Bhimavaram Open" 
+                className="w-8 h-8 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.outerHTML = '<span class="text-sm">🎾</span>';
+                }}
+              />
             </button>
           ) : (
-            // Expanded view - Compact design matching the attached image
+            // Expanded view - Purple/Blue gradient design
             <div className="bg-gradient-to-br from-purple-600 via-purple-500 to-blue-500 rounded-xl overflow-hidden shadow-2xl">
               {/* Content */}
               <div className="p-2.5 flex items-center gap-2.5">
-                {/* Left: Team Icon Circle */}
+                {/* Left: Bhimavaram Open Logo */}
                 <div className="flex-shrink-0 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">⚡</span>
-                  </div>
+                  <img 
+                    src="/logo.png" 
+                    alt="Bhimavaram Open" 
+                    className="w-7 h-7 rounded-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="w-7 h-7 bg-gradient-to-br from-purple-600 to-blue-500 rounded-full flex items-center justify-center"><span class="text-white text-[8px] font-bold">🎾</span></div>';
+                      }
+                    }}
+                  />
                 </div>
 
                 {/* Center: Match Info */}
@@ -218,25 +412,8 @@ export function FloatingPiPWidget() {
       )}
 
       {/* Instructions overlay when PiP is active */}
-      {isPiPActive && (
-        <div className="fixed bottom-4 right-4 z-50 bg-black/90 text-white p-4 rounded-lg shadow-2xl max-w-xs">
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <div className="font-semibold mb-1">Picture-in-Picture Active</div>
-              <div className="text-sm text-gray-300">
-                The score is now floating on top of all windows. You can move it around and continue browsing!
-              </div>
-            </div>
-            <button
-              onClick={exitPiP}
-              className="text-white hover:text-red-400 transition-colors"
-              title="Exit PiP"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      )}
     </>
   )
 }
+
+export default FloatingPiPWidget
