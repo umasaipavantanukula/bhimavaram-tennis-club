@@ -1,13 +1,22 @@
 import { useState, useEffect } from "react"
+import { heroOperations, type HeroSlide } from "@/lib/firebase-operations"
 
 export function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [slides, setSlides] = useState<any[]>([{
+    id: 1,
+    image: "https://tse1.mm.bing.net/th/id/OIP.hWiwB1x19v5DkwfpAYSX6wHaFj?pid=Api&P=0&h=180",
+    title: "Master Your Game",
+    subtitle: "Professional Training",
+    accentColor: "from-blue-400 to-purple-400"
+  }])
+  const [loading, setLoading] = useState(true)
 
-  const slides = [
+  // Default fallback slides if no slides are found in database
+  const defaultSlides = [
     {
       id: 1,
       image: "https://tse1.mm.bing.net/th/id/OIP.hWiwB1x19v5DkwfpAYSX6wHaFj?pid=Api&P=0&h=180",
-      // bgGradient: "from-blue-900/90 via-purple-900/80 to-indigo-900/90",
       title: "Master Your Game",
       subtitle: "Professional Training",
       accentColor: "from-blue-400 to-purple-400"
@@ -15,7 +24,6 @@ export function HeroSection() {
     {
       id: 2,
       image: "https://tse3.mm.bing.net/th/id/OIP.S1OG8gO3WoxeJbH4mYTiOAHaEK?pid=Api&P=0&h=180",
-      // bgGradient: "from-emerald-900/90 via-teal-900/80 to-cyan-900/90",
       title: "Court Excellence",
       subtitle: "World-Class Facilities",
       accentColor: "from-emerald-400 to-teal-400"
@@ -23,12 +31,69 @@ export function HeroSection() {
     {
       id: 3,
       image: "https://tse4.mm.bing.net/th/id/OIP.Bi49Rgno_0fPqqEA-2PS5gHaE8?pid=Api&P=0&h=180",
-      // bgGradient: "from-amber-900/90 via-orange-900/80 to-red-900/90",
       title: "Champions Academy",
       subtitle: "Build Your Legacy",
       accentColor: "from-amber-400 to-orange-400"
     }
   ]
+
+  useEffect(() => {
+    loadHeroSlides()
+  }, [])
+
+  const loadHeroSlides = async () => {
+    try {
+      console.log("Loading hero slides from database...")
+      const heroSlides = await heroOperations.getAll()
+      console.log("Retrieved hero slides:", heroSlides)
+      
+      if (heroSlides && heroSlides.length > 0) {
+        // Filter active slides and sort by order
+        const activeSlides = heroSlides
+          .filter((slide: HeroSlide) => slide.isActive)
+          .sort((a: HeroSlide, b: HeroSlide) => a.order - b.order)
+        
+        if (activeSlides.length > 0) {
+          // Convert Firebase slides to component format
+          const formattedSlides = activeSlides.map((slide: HeroSlide) => ({
+            id: slide.id,
+            image: slide.imageUrl,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            accentColor: slide.accentColor || "from-blue-400 to-purple-400"
+          }))
+          console.log("Formatted slides:", formattedSlides)
+          setSlides(formattedSlides)
+        } else {
+          console.log("No active slides found, using default slides")
+          setSlides(defaultSlides)
+        }
+      } else {
+        console.log("No slides found in database, using default slides")
+        // Use default slides if no slides in database
+        setSlides(defaultSlides)
+      }
+    } catch (error) {
+      console.error("Error loading hero slides:", error)
+      // Fallback to default slides on error
+      setSlides(defaultSlides)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Listen for hero slides updates (you can call this from admin dashboard)
+  useEffect(() => {
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'heroSlidesUpdated') {
+        console.log("Hero slides updated, reloading...")
+        loadHeroSlides()
+      }
+    }
+    
+    window.addEventListener('storage', handleStorageEvent)
+    return () => window.removeEventListener('storage', handleStorageEvent)
+  }, [])
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length)
@@ -42,6 +107,28 @@ export function HeroSection() {
     const interval = setInterval(nextSlide, 6000)
     return () => clearInterval(interval)
   }, [])
+
+  if (loading) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading hero section...</p>
+        </div>
+      </section>
+    )
+  }
+
+  if (slides.length === 0) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-900">
+        <div className="text-center">
+          <h2 className="text-white text-2xl mb-4">No hero slides available</h2>
+          <p className="text-gray-300">Please add some slides from the admin dashboard.</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
@@ -74,21 +161,26 @@ export function HeroSection() {
                 : 'opacity-0 scale-95 pointer-events-none'
             }`}
           >
-            {/* Parallax Background Image */}
+            {/* Full Coverage Background Image */}
             <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-50"
+              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
               style={{ 
                 backgroundImage: `url(${slide.image})`,
-                transform: `scale(1.1) translateZ(0)`
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
               }}
             />
             
-            {/* Dynamic Gradient Overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${slide.bgGradient}`} />
+            {/* Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-black/40" />
+            
+            {/* Gradient Overlay with Accent Color */}
+            <div className={`absolute inset-0 bg-gradient-to-br from-black/30 via-transparent to-black/50`} />
             
             {/* Animated Border Glow */}
             <div className={`absolute inset-0 bg-gradient-to-r ${slide.accentColor} opacity-0 rounded-full blur-3xl animate-pulse-slow ${
-              index === currentSlide ? 'opacity-20' : 'opacity-0'
+              index === currentSlide ? 'opacity-10' : 'opacity-0'
             }`} />
           </div>
         ))}
@@ -110,10 +202,10 @@ export function HeroSection() {
           {/* Main Hero Title */}
           <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
             <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent block">
-              {slides[currentSlide].title}
+              {slides.length > 0 && slides[currentSlide] ? slides[currentSlide].title : "Master Your Game"}
             </span>
             <span className="bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent block">
-              {slides[currentSlide].subtitle}
+              {slides.length > 0 && slides[currentSlide] ? slides[currentSlide].subtitle : "Professional Training"}
             </span>
           </h1>
           
@@ -181,7 +273,7 @@ export function HeroSection() {
                 : 'bg-white/40 hover:bg-white/70 hover:scale-125 shadow-glow-inactive'
             }`}
           >
-            <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${slides[index].accentColor} opacity-0 group-hover:opacity-30 ${
+            <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${slides[index]?.accentColor || 'from-blue-400 to-purple-400'} opacity-0 group-hover:opacity-30 ${
               index === currentSlide ? 'opacity-50' : ''
             } blur-sm`} />
           </button>
