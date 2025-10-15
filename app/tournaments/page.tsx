@@ -278,12 +278,13 @@ export default function TournamentsPage() {
                         </div>
                       </div>
 
-                      {/* Match Details */}
-                      <div className="px-6 py-6">
-                        <div className="flex items-center justify-between">
-                          {/* Player 1 */}
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                      {/* Match Details - Clean Horizontal Layout */}
+                      <div className="px-8 py-8">
+                        <div className="flex items-center justify-center gap-6">
+                          {/* Player 1 Section */}
+                          <div className="flex items-center gap-4">
+                            {/* Player 1 Photo - Medium Size */}
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-blue-300 shadow-md">
                               {getPlayerImage(match.player1) ? (
                                 <img 
                                   src={getPlayerImage(match.player1)!} 
@@ -292,46 +293,51 @@ export default function TournamentsPage() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm">
+                                  <span className="text-white font-bold text-lg">
                                     {getPlayerInitials(match.player1)}
                                   </span>
                                 </div>
                               )}
                             </div>
+                            
+                            {/* Player 1 Details */}
                             <div>
-                              <div className="font-semibold text-gray-900">{match.player1}</div>
-                              <div className="text-sm text-gray-500">{match.tournament} Player</div>
+                              <div className="font-bold text-gray-900 text-base">{match.player1}</div>
+                              <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
                             </div>
                           </div>
 
-                          {/* Score Section */}
-                          <div className="flex items-center gap-8 px-8">
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-900">
-                                {actualStatus === "upcoming" ? "" : (player1Score || "0")}
-                              </div>
-                              {actualStatus === "completed" && player1Score && <div className="text-xs text-gray-500">Sets Won</div>}
-                              {actualStatus === "live" && <div className="text-xs text-red-500 animate-pulse">Playing</div>}
-                            </div>
-                            
-                            <div className="text-2xl font-bold text-gray-400">VS</div>
-                            
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-900">
-                                {actualStatus === "upcoming" ? "" : (player2Score || "0")}
-                              </div>
-                              {actualStatus === "completed" && player2Score && <div className="text-xs text-gray-500">Sets Won</div>}
-                              {actualStatus === "live" && <div className="text-xs text-red-500 animate-pulse">Playing</div>}
-                            </div>
+                          {/* Player 1 Score */}
+                          <div className="text-4xl font-extrabold text-green-600 min-w-[50px] text-center">
+                            {actualStatus === "upcoming" ? "-" : (player1Score || "0")}
                           </div>
 
-                          {/* Player 2 */}
-                          <div className="flex items-center gap-4 flex-1 justify-end">
+                          {/* VS Divider */}
+                          <div className="flex flex-col items-center px-6">
+                            <div className="text-2xl font-black text-gray-400 tracking-wider">VS</div>
+                            {actualStatus === "live" && (
+                              <div className="flex items-center gap-1 mt-2">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+                                <span className="text-xs font-bold text-red-500 uppercase">Live</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Player 2 Score */}
+                          <div className="text-4xl font-extrabold text-green-600 min-w-[50px] text-center">
+                            {actualStatus === "upcoming" ? "-" : (player2Score || "0")}
+                          </div>
+
+                          {/* Player 2 Section */}
+                          <div className="flex items-center gap-4">
+                            {/* Player 2 Details */}
                             <div className="text-right">
-                              <div className="font-semibold text-gray-900">{match.player2}</div>
-                              <div className="text-sm text-gray-500">{match.tournament} Player</div>
+                              <div className="font-bold text-gray-900 text-base">{match.player2}</div>
+                              <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
                             </div>
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                            
+                            {/* Player 2 Photo - Medium Size */}
+                            <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-red-300 shadow-md">
                               {getPlayerImage(match.player2) ? (
                                 <img 
                                   src={getPlayerImage(match.player2)!} 
@@ -340,7 +346,7 @@ export default function TournamentsPage() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm">
+                                  <span className="text-white font-bold text-lg">
                                     {getPlayerInitials(match.player2)}
                                   </span>
                                 </div>

@@ -670,3 +670,113 @@ export const highlightsOperations = {
     })
   },
 }
+
+// Hero Slide operations
+export interface HeroSlide {
+  id?: string
+  title: string
+  subtitle: string
+  imageUrl: string
+  accentColor: string
+  isActive: boolean
+  order: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export const heroOperations = {
+  async create(slide: Omit<HeroSlide, "id" | "createdAt" | "updatedAt">) {
+    const database = ensureDb()
+    const docRef = await addDoc(collection(database, "heroSlides"), {
+      ...slide,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    })
+    return docRef.id
+  },
+
+  async getAll() {
+    const database = ensureDb()
+    try {
+      // Try with ordering first
+      const q = query(collection(database, "heroSlides"), orderBy("order", "asc"))
+      const querySnapshot = await getDocs(q)
+      return querySnapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          title: data.title,
+          subtitle: data.subtitle,
+          imageUrl: data.imageUrl,
+          accentColor: data.accentColor,
+          isActive: data.isActive,
+          order: data.order || 0,
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        } as HeroSlide
+      })
+    } catch (error) {
+      console.log("Falling back to simple query without ordering...")
+      // Fallback to simple query without ordering if index doesn't exist
+      const querySnapshot = await getDocs(collection(database, "heroSlides"))
+      return querySnapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          title: data.title,
+          subtitle: data.subtitle,
+          imageUrl: data.imageUrl,
+          accentColor: data.accentColor,
+          isActive: data.isActive,
+          order: data.order || 0,
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        } as HeroSlide
+      }).sort((a, b) => a.order - b.order) // Sort on client-side
+    }
+  },
+
+  async getActive() {
+    const database = ensureDb()
+    const q = query(
+      collection(database, "heroSlides"), 
+      where("isActive", "==", true),
+      orderBy("order", "asc")
+    )
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        title: data.title,
+        subtitle: data.subtitle,
+        imageUrl: data.imageUrl,
+        accentColor: data.accentColor,
+        isActive: data.isActive,
+        order: data.order,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as HeroSlide
+    })
+  },
+
+  async update(id: string, updates: Partial<Omit<HeroSlide, "id" | "createdAt">>) {
+    const database = ensureDb()
+    await updateDoc(doc(database, "heroSlides", id), {
+      ...updates,
+      updatedAt: Timestamp.now(),
+    })
+  },
+
+  async delete(id: string) {
+    const database = ensureDb()
+    await deleteDoc(doc(database, "heroSlides", id))
+  },
+
+  async uploadImage(file: File, fileName: string): Promise<string> {
+    const firebaseStorage = ensureStorage()
+    const storageRef = ref(firebaseStorage, `hero-slides/${fileName}`)
+    await uploadBytes(storageRef, file)
+    return await getDownloadURL(storageRef)
+  },
+}
