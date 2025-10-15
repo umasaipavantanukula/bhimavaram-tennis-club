@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { useState, useEffect, useCallback } from "react";
-
-export function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-=======
 import { useState, useEffect } from "react"
 import { heroOperations, type HeroSlide } from "@/lib/firebase-operations"
 
@@ -18,29 +11,10 @@ export function HeroSection() {
     accentColor: "from-blue-400 to-purple-400"
   }])
   const [loading, setLoading] = useState(true)
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
 
   // Default fallback slides if no slides are found in database
   const defaultSlides = [
     {
-<<<<<<< HEAD
-      image: "https://media.istockphoto.com/id/2155734323/photo/clay-tennis-court.webp?a=1&b=1&s=612x612&w=0&k=20&c=QaLNuv_rvisTjHcSBgRWQ7kEfhAy8TbdeE0PqevAXxo=",
-      title: "Championship Tennis",
-      subtitle: "Experience world-class facilities and professional coaching",
-      cta: "Book Courts"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGVubmlzfGVufDB8fDB8fHww&auto=format&fit=crop&q=60&w=600",
-      title: "Bhimavaram Tennis Club",
-      subtitle: "Best place to play tennis in Bhimavaram",
-      cta: "View Programs"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1587683437362-da7775ffc532?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHRlbm5pcyUyMHBsYXllcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
-      title: "Join The Community",
-      subtitle: "Connect with passionate players and compete in tournaments",
-      cta: "Join Now"
-=======
       id: 1,
       image: "https://tse1.mm.bing.net/th/id/OIP.hWiwB1x19v5DkwfpAYSX6wHaFj?pid=Api&P=0&h=180",
       title: "Master Your Game",
@@ -60,17 +34,9 @@ export function HeroSection() {
       title: "Champions Academy",
       subtitle: "Build Your Legacy",
       accentColor: "from-amber-400 to-orange-400"
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
     }
   ];
 
-<<<<<<< HEAD
-  const nextSlide = useCallback(() => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, [isTransitioning, slides.length]);
-=======
   useEffect(() => {
     loadHeroSlides()
   }, [])
@@ -132,31 +98,19 @@ export function HeroSection() {
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length)
   }
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
 
   const prevSlide = () => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+  }
 
   const goToSlide = (index: number) => {
-    if (isTransitioning || index === currentSlide) return;
-    setIsTransitioning(true);
-    setCurrentSlide(index);
-  };
+    setCurrentSlide(index)
+  }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [currentSlide]);
-
-  useEffect(() => {
-    const interval = setInterval(nextSlide, 5000);
-    return () => clearInterval(interval);
-  }, [nextSlide]);
+    const interval = setInterval(nextSlide, 5000)
+    return () => clearInterval(interval)
+  }, [slides.length])
 
   if (loading) {
     return (
@@ -206,77 +160,6 @@ export function HeroSection() {
               backgroundRepeat: 'no-repeat'
             }}
           >
-<<<<<<< HEAD
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
-            
-            {/* Animated Tennis Ball */}
-            <div className="absolute top-10 right-10 w-12 h-12 bg-white rounded-full animate-bounce">
-              <div className="w-full h-full bg-gradient-to-br from-white to-gray-200 rounded-full flex items-center justify-center">
-                <div className="w-1 h-8 bg-gray-400 transform rotate-45"></div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 h-full flex items-end pb-20 pl-10 md:pl-20">
-              <div className="max-w-2xl space-y-6 transform transition-all duration-1000 delay-300">
-                {/* Badge */}
-                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-600 rounded-full animate-pulse">
-                  <span className="text-white text-sm font-semibold">Premium Tennis Club</span>
-                </div>
-
-                {/* Title */}
-                <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-                  <span className="bg-gradient-to-r from-white via-emerald-200 to-blue-200 bg-clip-text text-transparent animate-gradient">
-                    {slide.title}
-                  </span>
-                </h1>
-
-                {/* Subtitle */}
-                <p className="text-xl md:text-2xl text-gray-200 font-light max-w-lg leading-relaxed">
-                  {slide.subtitle}
-                </p>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <button className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-600 text-white font-semibold rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                    <span className="relative z-10 flex items-center gap-2">
-                      {slide.cta}
-                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-
-                  <button className="group px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/50">
-                    <span className="flex items-center gap-2">
-                      Learn More
-                      <svg className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </span>
-                  </button>
-                </div>
-
-                {/* Stats */}
-                <div className="flex gap-8 pt-8">
-                  <div className="text-white">
-                    <div className="text-2xl font-bold text-emerald-400">50+</div>
-                    <div className="text-sm text-gray-300">Professional Courts</div>
-                  </div>
-                  <div className="text-white">
-                    <div className="text-2xl font-bold text-blue-400">1000+</div>
-                    <div className="text-sm text-gray-300">Active Members</div>
-                  </div>
-                  <div className="text-white">
-                    <div className="text-2xl font-bold text-orange-400">24/7</div>
-                    <div className="text-sm text-gray-300">Available</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-=======
             {/* Full Coverage Background Image */}
             <div 
               className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
@@ -298,15 +181,10 @@ export function HeroSection() {
             <div className={`absolute inset-0 bg-gradient-to-r ${slide.accentColor} opacity-0 rounded-full blur-3xl animate-pulse-slow ${
               index === currentSlide ? 'opacity-10' : 'opacity-0'
             }`} />
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
           </div>
         ))}
       </div>
 
-<<<<<<< HEAD
-      {/* Navigation Dots */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-3">
-=======
       {/* All Content - Bottom Left */}
       <div className="absolute bottom-12 left-8 right-8 z-20 max-w-2xl animate-slide-in-left">
         <div className="group">
@@ -384,7 +262,6 @@ export function HeroSection() {
 
       {/* Enhanced Indicators with Glow */}
       <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 flex space-x-4 z-30">
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
         {slides.map((_, index) => (
           <button
             key={index}
@@ -394,15 +271,11 @@ export function HeroSection() {
                 ? 'bg-white scale-125'
                 : 'bg-white/50 hover:bg-white/80'
             }`}
-<<<<<<< HEAD
-          />
-=======
           >
             <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${slides[index]?.accentColor || 'from-blue-400 to-purple-400'} opacity-0 group-hover:opacity-30 ${
               index === currentSlide ? 'opacity-50' : ''
             } blur-sm`} />
           </button>
->>>>>>> 00a74a1b1bd0af67f8517514502ecc908d21295a
         ))}
       </div>
 
