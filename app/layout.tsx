@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
@@ -22,8 +22,13 @@ export const metadata: Metadata = {
     "Join Bhimavaram Tennis Club - Professional coaching, court booking, tournaments, and tennis community in Bhimavaram",
   generator: "v0.app",
   manifest: "/manifest.json",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: "#7c3aed",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 }
 
 function RootLayoutContent({ children }: { children: React.ReactNode }) {
