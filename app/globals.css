@@ -221,3 +221,198 @@
 .animate-scroll-rtl:hover {
   animation-play-state: paused;
 }
+
+/* Mobile Responsive Styles */
+@layer components {
+  /* Mobile Pop-up/Dialog Adjustments */
+  @media (max-width: 768px) {
+    /* Dialog/Modal adjustments for mobile */
+    [role="dialog"],
+    .dialog-content,
+    [data-radix-dialog-content] {
+      max-width: 92vw !important;
+      max-height: 85vh !important;
+      margin: 1rem !important;
+      padding: 1rem !important;
+      font-size: 0.875rem;
+    }
+
+    /* Alert Dialog adjustments */
+    [role="alertdialog"],
+    .alert-dialog-content {
+      max-width: 90vw !important;
+      padding: 1.25rem !important;
+    }
+
+    /* Popover adjustments */
+    [data-radix-popover-content],
+    .popover-content {
+      max-width: 85vw !important;
+      font-size: 0.875rem;
+    }
+
+    /* Dropdown menu adjustments */
+    [data-radix-dropdown-menu-content],
+    .dropdown-menu-content {
+      max-width: 90vw !important;
+      font-size: 0.875rem;
+    }
+
+    /* Sheet/Drawer adjustments */
+    [data-radix-dialog-content][data-state="open"] {
+      animation: slideInFromBottom 0.3s ease-out;
+    }
+
+    /* Card adjustments */
+    .card {
+      padding: 0.75rem !important;
+    }
+
+    /* Button adjustments */
+    button {
+      min-height: 44px; /* Touch-friendly size */
+    }
+
+    /* Form inputs */
+    input, textarea, select {
+      font-size: 16px; /* Prevent zoom on focus in iOS */
+      min-height: 44px;
+    }
+
+    /* Scrollable content in dialogs */
+    .dialog-content > div,
+    [data-radix-dialog-content] > div {
+      max-height: calc(85vh - 4rem);
+      overflow-y: auto;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    [role="dialog"],
+    .dialog-content,
+    [data-radix-dialog-content] {
+      max-width: 95vw !important;
+      max-height: 90vh !important;
+      margin: 0.5rem !important;
+      padding: 0.875rem !important;
+      font-size: 0.8125rem;
+    }
+
+    /* Reduce heading sizes in mobile dialogs */
+    [role="dialog"] h1,
+    [role="dialog"] h2,
+    .dialog-content h1,
+    .dialog-content h2 {
+      font-size: 1.25rem !important;
+    }
+
+    [role="dialog"] h3,
+    .dialog-content h3 {
+      font-size: 1.125rem !important;
+    }
+  }
+
+  /* Smooth animations for mobile menu */
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromTop {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Mobile menu animations */
+  .mobile-menu {
+    animation: slideInFromTop 0.3s ease-out;
+  }
+
+  /* Touch-friendly hover states for mobile */
+  @media (hover: none) and (pointer: coarse) {
+    button:hover,
+    a:hover {
+      transform: none;
+    }
+
+    button:active,
+    a:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+  }
+
+  /* Prevent text selection on buttons in mobile */
+  button, .button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+}
+
+/* Utility classes for responsive spacing */
+@layer utilities {
+  .mobile-padding {
+    @apply px-4 py-3;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-padding {
+      @apply px-6 py-4;
+    }
+  }
+
+  .mobile-text {
+    @apply text-sm;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-text {
+      @apply text-base;
+    }
+  }
+
+  /* Extra small screens (xs) breakpoint - 480px */
+  @media (min-width: 480px) {
+    .xs\:inline {
+      display: inline !important;
+    }
+    .xs\:flex-row {
+      flex-direction: row !important;
+    }
+    .xs\:items-center {
+      align-items: center !important;
+    }
+    .xs\:justify-between {
+      justify-content: space-between !important;
+    }
+    .xs\:text-left {
+      text-align: left !important;
+    }
+    .xs\:w-48 {
+      width: 12rem !important;
+    }
+  }
+}
