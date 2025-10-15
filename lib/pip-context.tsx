@@ -26,7 +26,7 @@ interface PiPProviderProps {
 }
 
 export function PiPProvider({ children }: PiPProviderProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true) // Auto-open on load
   const [position, setPosition] = useState({ x: 20, y: 100 })
 
   const openPiP = useCallback(() => {
