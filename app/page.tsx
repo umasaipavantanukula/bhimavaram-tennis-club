@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Navigation } from "@/components/navigation"
-import { HeroSection } from "@/components/hero-section"
+import HeroSection from "@/components/hero-section"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
