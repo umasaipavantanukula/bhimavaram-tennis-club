@@ -18,7 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Edit, Trash2, Trophy } from "lucide-react"
+import { Plus, Edit, Trash2, Trophy, YoutubeIcon } from "lucide-react"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
 import { useToast } from "@/hooks/use-toast"
 
@@ -29,14 +29,30 @@ export function MatchesManager() {
   const [editingMatch, setEditingMatch] = useState<Match | null>(null)
   const { toast } = useToast()
 
-  const [formData, setFormData] = useState({
+  type FormData = {
+    player1: string;
+    player2: string;
+    player1Score: string;
+    player2Score: string;
+    date: string;
+    tournament: string;
+    status: "upcoming" | "live" | "completed";
+    court: string;
+    live_link: string;
+    score?: string;
+  };
+
+  const [formData, setFormData] = useState<FormData>({
     player1: "",
     player2: "",
-    score: "",
+    player1Score: "",
+    player2Score: "",
     date: "",
     tournament: "",
-    status: "upcoming" as const,
+    status: "upcoming",
     court: "",
+    live_link: "",
+    score: "",
   })
 
   useEffect(() => {
@@ -63,6 +79,7 @@ export function MatchesManager() {
     try {
       const matchData = {
         ...formData,
+        score: `${formData.player1Score} - ${formData.player2Score}`,
         date: new Date(formData.date),
       }
 
@@ -94,14 +111,17 @@ export function MatchesManager() {
 
   const handleEdit = (match: Match) => {
     setEditingMatch(match)
+    const [player1Score, player2Score] = (match.score || "").split(" - ")
     setFormData({
       player1: match.player1,
       player2: match.player2,
-      score: match.score,
+      player1Score: player1Score || "",
+      player2Score: player2Score || "",
       date: match.date.toISOString().split("T")[0],
       tournament: match.tournament,
       status: match.status,
       court: match.court || "",
+      live_link: match.live_link || "",
     })
     setDialogOpen(true)
   }
@@ -129,11 +149,13 @@ export function MatchesManager() {
     setFormData({
       player1: "",
       player2: "",
-      score: "",
+      player1Score: "",
+      player2Score: "",
       date: "",
       tournament: "",
       status: "upcoming",
       court: "",
+      live_link: "",
     })
     setEditingMatch(null)
   }
@@ -190,6 +212,35 @@ export function MatchesManager() {
                     value={formData.player2}
                     onChange={(e) => setFormData({ ...formData, player2: e.target.value })}
                     required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="live_link">Live Link (YouTube Embed URL)</Label>
+                <Input
+                  id="live_link"
+                  value={formData.live_link}
+                  onChange={(e) => setFormData({ ...formData, live_link: e.target.value })}
+                  placeholder="https://www.youtube.com/embed/live_id"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="player1Score">Player 1 Score</Label>
+                  <Input
+                    id="player1Score"
+                    value={formData.player1Score}
+                    onChange={(e) => setFormData({ ...formData, player1Score: e.target.value })}
+                    placeholder="e.g. 6"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="player2Score">Player 2 Score</Label>
+                  <Input
+                    id="player2Score"
+                    value={formData.player2Score}
+                    onChange={(e) => setFormData({ ...formData, player2Score: e.target.value })}
+                    placeholder="e.g. 4"
                   />
                 </div>
               </div>
@@ -286,12 +337,25 @@ export function MatchesManager() {
             <TableBody>
               {matches.map((match) => (
                 <TableRow key={match.id}>
-                  <TableCell className="font-medium">
-                    {match.player1} vs {match.player2}
+                  <TableCell className="font-medium flex items-center gap-2">
+                    {/* Player 1 */}
+                    {match.player1}
                   </TableCell>
                   <TableCell>{match.tournament}</TableCell>
                   <TableCell>{match.date.toLocaleDateString()}</TableCell>
-                  <TableCell>{match.score || "TBD"}</TableCell>
+                  <TableCell>
+                    <span className="font-bold text-green-700">{(match.score || "TBD").split(" - ")[0]}</span>
+                    <span className="mx-1 text-gray-500">vs</span>
+                    {/* Player 2 section with photo and Watch Live */}
+                    <span className="font-bold text-blue-700 flex items-center gap-2">
+                      {/* Replace with actual player2 photo if available */}
+                      <span className="flex items-center gap-2">
+                        {/* Example: <img src={match.player2PhotoUrl} alt={match.player2} className="w-10 h-10 rounded-full border-2 border-red-500" /> */}
+                        {match.player2}
+                        {/* Watch Live button removed from admin dashboard as requested */}
+                      </span>
+                    </span>
+                  </TableCell>
                   <TableCell>{getStatusBadge(match.status)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">

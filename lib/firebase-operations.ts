@@ -41,6 +41,7 @@ export interface Match {
   status: "upcoming" | "completed" | "live"
   court?: string
   createdAt: Date
+  live_link?: string
 }
 
 export const matchOperations = {
