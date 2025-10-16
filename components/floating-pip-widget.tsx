@@ -88,46 +88,56 @@ export function FloatingPiPWidget() {
 
     const { player1Score, player2Score } = parseScore(currentMatch.score)
 
-    // Rectangle dimensions for PiP (wider aspect ratio)
-    canvas.width = 400
-    canvas.height = 200
+    // Compact dimensions - smaller PiP window
+    canvas.width = 280
+    canvas.height = 140
 
     // Black background
     ctx.fillStyle = "#000000"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Draw LIVE indicator if status is live
+    // Draw LIVE indicator with red pulsing dot if status is live
     if (currentMatch.status === "live") {
+      // Red dot
       ctx.fillStyle = "#ef4444"
-      ctx.fillRect(15, 15, 60, 25)
-      ctx.fillStyle = "#ffffff"
-      ctx.font = "bold 14px Arial"
-      ctx.fillText("LIVE", 25, 32)
+      ctx.beginPath()
+      ctx.arc(15, 15, 6, 0, 2 * Math.PI)
+      ctx.fill()
+      
+      // LIVE text
+      ctx.fillStyle = "#ef4444"
+      ctx.font = "bold 12px Arial"
+      ctx.fillText("LIVE", 28, 20)
     }
 
+    // Player 1 - Name and Score
+    ctx.fillStyle = "#ffffff"
+    ctx.font = "bold 14px Arial"
+    ctx.fillText(currentMatch.player1, 15, 60)
+    
+    // Score box for player 1
     ctx.fillStyle = "#84cc16"
-    ctx.fillRect(260, 50, 120, 50)
-    ctx.fillRect(260, 120, 120, 50)
-
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(currentMatch.player1, 15, 75)
-    
+    ctx.fillRect(190, 45, 70, 35)
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 32px Arial"
-    ctx.fillText(player1Score, 290, 85)
+    ctx.font = "bold 24px Arial"
+    ctx.fillText(player1Score, 205, 70)
 
+    // VS divider
+    ctx.fillStyle = "#84cc16"
+    ctx.font = "bold 10px Arial"
+    ctx.fillText("VS", 130, 80)
+
+    // Player 2 - Name and Score
     ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(currentMatch.player2, 15, 150)
+    ctx.font = "bold 14px Arial"
+    ctx.fillText(currentMatch.player2, 15, 115)
     
+    // Score box for player 2
+    ctx.fillStyle = "#84cc16"
+    ctx.fillRect(190, 100, 70, 35)
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 32px Arial"
-    ctx.fillText(player2Score, 290, 160)
-
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "12px Arial"
-    ctx.fillText(`${currentMatch.tournament} • ${formatTime(currentMatch.date)}`, 15, 190)
+    ctx.font = "bold 24px Arial"
+    ctx.fillText(player2Score, 205, 125)
   }
 
   const enterPiP = async () => {
@@ -292,31 +302,7 @@ export function FloatingPiPWidget() {
       )}
 
       {/* Show notification when PiP is active */}
-      {isPiPActive && (
-        <div className="fixed bottom-4 right-4 z-50 bg-black/90 text-white p-3 rounded-lg shadow-2xl max-w-[200px] border border-lime-500/50">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <div className="font-semibold mb-1 text-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                Live Score Floating
-              </div>
-              <div className="text-xs text-gray-300">
-                {currentMatch.player1} vs {currentMatch.player2}
-              </div>
-              <div className="text-xs text-lime-400 mt-1">
-                Score: {player1Score} - {player2Score}
-              </div>
-            </div>
-            <button
-              onClick={exitPiP}
-              className="text-gray-400 hover:text-red-400 transition-colors"
-              title="Exit PiP"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Removed - no notification needed */}
     </>
   )
 }
