@@ -1,17 +1,17 @@
 ﻿"use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Minimize2, Maximize2, BarChart3 } from "lucide-react"
+import { X, Maximize2 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
 import Image from "next/image"
 
 export function FloatingPiPWidget() {
   const { isOpen, closePiP } = usePiP()
-  const [isMinimized, setIsMinimized] = useState(false)
   const [isPiPActive, setIsPiPActive] = useState(false)
   const [currentMatch, setCurrentMatch] = useState<Match | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -88,44 +88,46 @@ export function FloatingPiPWidget() {
 
     const { player1Score, player2Score } = parseScore(currentMatch.score)
 
-    canvas.width = 200
-    canvas.height = 150
+    // Rectangle dimensions for PiP (wider aspect ratio)
+    canvas.width = 400
+    canvas.height = 200
 
+    // Black background
     ctx.fillStyle = "#000000"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+    // Draw LIVE indicator if status is live
     if (currentMatch.status === "live") {
       ctx.fillStyle = "#ef4444"
-      ctx.fillRect(10, 10, 40, 15)
+      ctx.fillRect(15, 15, 60, 25)
       ctx.fillStyle = "#ffffff"
-      ctx.font = "bold 8px Arial"
-      ctx.fillText("LIVE", 15, 20)
+      ctx.font = "bold 14px Arial"
+      ctx.fillText("LIVE", 25, 32)
     }
 
     ctx.fillStyle = "#84cc16"
-    ctx.fillRect(110, 35, 80, 30)
-    ctx.fillRect(110, 85, 80, 30)
+    ctx.fillRect(260, 50, 120, 50)
+    ctx.fillRect(260, 120, 120, 50)
 
     ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 10px Arial"
-    ctx.fillText(currentMatch.player1, 10, 50)
+    ctx.font = "bold 18px Arial"
+    ctx.fillText(currentMatch.player1, 15, 75)
     
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(player1Score, 135, 55)
+    ctx.font = "bold 32px Arial"
+    ctx.fillText(player1Score, 290, 85)
 
     ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 10px Arial"
-    ctx.fillText(currentMatch.player2, 10, 100)
+    ctx.font = "bold 18px Arial"
+    ctx.fillText(currentMatch.player2, 15, 150)
     
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(player2Score, 135, 105)
+    ctx.font = "bold 32px Arial"
+    ctx.fillText(player2Score, 290, 160)
 
     ctx.fillStyle = "#ffffff"
-    ctx.font = "7px Arial"
-    ctx.fillText(currentMatch.tournament, 10, 125)
-    ctx.fillText(formatDate(currentMatch.date), 10, 135)
+    ctx.font = "12px Arial"
+    ctx.fillText(`${currentMatch.tournament} • ${formatTime(currentMatch.date)}`, 15, 190)
   }
 
   const enterPiP = async () => {
@@ -147,7 +149,7 @@ export function FloatingPiPWidget() {
       }
     } catch (error) {
       console.error("Failed to enter PiP mode:", error)
-      alert("Picture-in-Picture is not supported in this browser.")
+      // alert("Picture-in-Picture is not supported in this browser.")
     }
   }
 
@@ -170,12 +172,17 @@ export function FloatingPiPWidget() {
     }
   }
 
-  // Auto-open PiP on page load when a match is available
+  // Show permission dialog when match data is ready
   useEffect(() => {
-    if (!loading && currentMatch && !isPiPActive && document.pictureInPictureEnabled) {
-      enterPiP()
+    if (!loading && currentMatch && !isPiPActive) {
+      // Show permission dialog after a short delay
+      const timer = setTimeout(() => {
+        setShowPermissionDialog(true)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
     }
-  }, [loading, currentMatch, isPiPActive])
+  }, [loading, currentMatch])
 
   useEffect(() => {
     if (isPiPActive && currentMatch) {
@@ -201,155 +208,108 @@ export function FloatingPiPWidget() {
 
   const { player1Score, player2Score } = parseScore(currentMatch.score)
 
+  const handleAllowPiP = () => {
+    setShowPermissionDialog(false)
+    enterPiP()
+  }
+
+  const handleDenyPiP = () => {
+    setShowPermissionDialog(false)
+    // User denied, don't show PiP
+  }
+
   return (
     <>
       <video ref={videoRef} className="hidden" muted playsInline />
       <canvas ref={canvasRef} className="hidden" />
 
-      {!isPiPActive && (
-        <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${isMinimized ? "w-10 h-10" : "w-[280px]"}`}>
-          {isMinimized ? (
-            <button
-              onClick={() => setIsMinimized(false)}
-              className="w-full h-full bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold hover:scale-110 transition-transform shadow-lg"
-            >
-              <span className="text-sm">🎾</span>
-            </button>
-          ) : (
-            <div className="bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800">
-              <div className="bg-gradient-to-r from-gray-900 to-black px-3 py-2 flex items-center justify-between border-b border-gray-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">TC</span>
-                  </div>
-                  <div>
-                    <div className="text-white text-xs font-bold">Tennis Club</div>
-                    <div className="flex items-center gap-1">
-                      {currentMatch.status === "live" && (
-                        <>
-                          <Image 
-                            src="/logo.png" 
-                            alt="Club Logo" 
-                            width={16} 
-                            height={16} 
-                            className="rounded-sm object-contain"
-                          />
-                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                          <span className="text-red-400 text-[10px] font-bold">LIVE</span>
-                        </>
-                      )}
-                      {currentMatch.status === "upcoming" && (
-                        <>
-                          <Image 
-                            src="/logo.png" 
-                            alt="Club Logo" 
-                            width={16} 
-                            height={16} 
-                            className="rounded-sm object-contain"
-                          />
-                          <span className="text-blue-400 text-[10px] font-bold">UPCOMING</span>
-                        </>
-                      )}
-                      {currentMatch.status === "completed" && (
-                        <>
-                          <Image 
-                            src="/logo.png" 
-                            alt="Club Logo" 
-                            width={16} 
-                            height={16} 
-                            className="rounded-sm object-contain"
-                          />
-                          <span className="text-gray-400 text-[10px] font-bold">COMPLETED</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={togglePiP}
-                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
-                    title="Float on screen"
-                  >
-                    <Maximize2 className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                  <button
-                    onClick={() => setIsMinimized(true)}
-                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <Minimize2 className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                  <button
-                    onClick={closePiP}
-                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                </div>
+      {/* Permission Dialog */}
+      {showPermissionDialog && !isPiPActive && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl shadow-2xl border-2 border-lime-500/50 p-6 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-300">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <Image 
+                  src="/logo.png" 
+                  alt="Club Logo" 
+                  width={48} 
+                  height={48} 
+                  className="rounded-lg object-contain"
+                />
               </div>
-
-              <div className="p-1">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between py-0.5 border-b border-gray-800">
-                    <span className="text-white text-[10px] font-bold">{currentMatch.player1}</span>
-                    <div className="bg-lime-500 text-black px-1.5 py-0.5 rounded font-bold text-sm min-w-[30px] text-center">
-                      {player1Score}
-                    </div>
+              <div className="flex-1">
+                <h3 className="text-white text-xl font-bold mb-2">
+                  Enable Live Score Floating?
+                </h3>
+                <p className="text-gray-300 text-sm mb-4">
+                  Would you like to enable the floating live score display? It will show the current match score in a small window that stays on top while you browse.
+                </p>
+                
+                {/* Match Preview */}
+                <div className="bg-black/40 rounded-lg p-3 mb-4 border border-lime-500/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white text-sm font-semibold">{currentMatch.player1}</span>
+                    <span className="bg-lime-500 text-black px-2 py-1 rounded font-bold text-sm">{player1Score}</span>
                   </div>
-                  <div className="flex items-center justify-between py-0.5">
-                    <span className="text-white text-[10px] font-bold">{currentMatch.player2}</span>
-                    <div className="bg-lime-500 text-black px-1.5 py-0.5 rounded font-bold text-sm min-w-[30px] text-center">
-                      {player2Score}
-                    </div>
+                  <div className="flex items-center justify-center my-1">
+                    <span className="text-lime-500 text-xs font-bold">VS</span>
                   </div>
-                </div>
-
-                <div className="mt-1 pt-1 border-t border-gray-800 space-y-0.5">
-                  <div className="flex items-center justify-between text-[8px]">
-                    <span className="text-gray-400">Tournament</span>
-                    <span className="text-white font-medium">{currentMatch.tournament}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white text-sm font-semibold">{currentMatch.player2}</span>
+                    <span className="bg-lime-500 text-black px-2 py-1 rounded font-bold text-sm">{player2Score}</span>
                   </div>
-                  {currentMatch.court && (
-                    <div className="flex items-center justify-between text-[8px]">
-                      <span className="text-gray-400">Court</span>
-                      <span className="text-white font-medium">{currentMatch.court}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between text-[8px]">
-                    <span className="text-gray-400">Date</span>
-                    <span className="text-white font-medium">{formatDate(currentMatch.date)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[8px]">
-                    <span className="text-gray-400">Time</span>
-                    <span className="text-white font-medium">{formatTime(currentMatch.date)}</span>
+                  <div className="mt-2 pt-2 border-t border-gray-700 text-center">
+                    <span className="text-gray-400 text-xs">{currentMatch.tournament}</span>
+                    {currentMatch.status === "live" && (
+                      <span className="ml-2 text-red-400 text-xs font-bold flex items-center justify-center gap-1 mt-1">
+                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                        LIVE NOW
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <button
-                  className="w-full mt-1 bg-lime-500 hover:bg-lime-600 text-black font-bold py-1 rounded text-[10px] flex items-center justify-center gap-1 transition-colors"
-                  onClick={() => window.location.href = '/tournaments'}
-                >
-                  <BarChart3 className="h-3 w-3" />
-                  View Stats
-                </button>
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleDenyPiP}
+                    className="flex-1 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    No Thanks
+                  </button>
+                  <button
+                    onClick={handleAllowPiP}
+                    className="flex-1 px-4 py-2.5 bg-lime-500 hover:bg-lime-600 text-black rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                    Enable Float
+                  </button>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
+      {/* Show notification when PiP is active */}
       {isPiPActive && (
-        <div className="fixed bottom-4 right-4 z-50 bg-black/90 text-white p-2 rounded-lg shadow-2xl max-w-[120px] text-[10px]">
-          <div className="flex items-start gap-1.5">
+        <div className="fixed bottom-4 right-4 z-50 bg-black/90 text-white p-3 rounded-lg shadow-2xl max-w-[200px] border border-lime-500/50">
+          <div className="flex items-start gap-2">
             <div className="flex-1">
-              <div className="font-semibold mb-0.5">PiP Active</div>
-              <div className="text-gray-300">
-                Score floating now!
+              <div className="font-semibold mb-1 text-sm flex items-center gap-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                Live Score Floating
+              </div>
+              <div className="text-xs text-gray-300">
+                {currentMatch.player1} vs {currentMatch.player2}
+              </div>
+              <div className="text-xs text-lime-400 mt-1">
+                Score: {player1Score} - {player2Score}
               </div>
             </div>
             <button
               onClick={exitPiP}
-              className="text-white hover:text-red-400 transition-colors"
+              className="text-gray-400 hover:text-red-400 transition-colors"
               title="Exit PiP"
             >
               <X className="h-4 w-4" />
