@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react"
-import { heroOperations, type HeroSlide } from "@/lib/firebase-operations"
 
-export function HeroSection() {
+import { useState, useEffect } from "react"
+import { heroOperations, matchOperations, type HeroSlide, type Match } from "@/lib/firebase-operations"
+
+export default function HeroSection() {
+
+
   const [currentSlide, setCurrentSlide] = useState(0)
   const [slides, setSlides] = useState<any[]>([{
     id: 1,
@@ -11,6 +14,8 @@ export function HeroSection() {
     accentColor: "from-blue-400 to-purple-400"
   }])
   const [loading, setLoading] = useState(true)
+  const [liveMatch, setLiveMatch] = useState<Match | null>(null)
+
 
   // Default fallback slides if no slides are found in database
   const defaultSlides = [
@@ -37,9 +42,24 @@ export function HeroSection() {
     }
   ]
 
+
+
   useEffect(() => {
     loadHeroSlides()
+    fetchLiveMatch()
   }, [])
+
+
+  const fetchLiveMatch = async () => {
+    try {
+      const matches = await matchOperations.getAll()
+      const live = matches.find((m: Match) => m.status === "live" && m.live_link)
+      setLiveMatch(live || null)
+    } catch (error) {
+      setLiveMatch(null)
+    }
+  }
+
 
   const loadHeroSlides = async () => {
     try {
@@ -82,6 +102,7 @@ export function HeroSection() {
     }
   }
 
+
   // Listen for hero slides updates (you can call this from admin dashboard)
   useEffect(() => {
     const handleStorageEvent = (e: StorageEvent) => {
@@ -94,6 +115,7 @@ export function HeroSection() {
     window.addEventListener('storage', handleStorageEvent)
     return () => window.removeEventListener('storage', handleStorageEvent)
   }, [])
+
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length)
@@ -214,8 +236,16 @@ export function HeroSection() {
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="px-8 py-4 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-glow-white whitespace-nowrap">
-              Start Your Journey
+            <button
+              className={`px-8 py-4 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-glow-white whitespace-nowrap ${!liveMatch ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!liveMatch}
+              onClick={() => {
+                if (liveMatch && liveMatch.live_link) {
+                  window.open(liveMatch.live_link, '_blank')
+                }
+              }}
+            >
+              Live
             </button>
             <button className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:scale-105 whitespace-nowrap">
               Watch Highlights
