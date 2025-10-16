@@ -102,11 +102,23 @@ export function HeroSection() {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
+<<<<<<< HEAD
 
   useEffect(() => {
     const interval = setInterval(nextSlide, 6000)
     return () => clearInterval(interval)
   }, [])
+=======
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index)
+  }
+
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 5000)
+    return () => clearInterval(interval)
+  }, [slides.length])
+>>>>>>> 2bbbe4658145a17c7a5e3dbebad659af966df597
 
   if (loading) {
     return (
