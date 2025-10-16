@@ -241,9 +241,9 @@ export function FloatingPiPWidget() {
                 <h3 className="text-white text-xl font-bold mb-2">
                   Enable Live Score Floating?
                 </h3>
-                <p className="text-gray-300 text-sm mb-4">
+                {/* <p className="text-gray-300 text-sm mb-4">
                   Would you like to enable the floating live score display? It will show the current match score in a small window that stays on top while you browse.
-                </p>
+                </p> */}
                 
                 {/* Match Preview */}
                 <div className="bg-black/40 rounded-lg p-3 mb-4 border border-lime-500/20">
@@ -258,7 +258,7 @@ export function FloatingPiPWidget() {
                     <span className="text-white text-sm font-semibold">{currentMatch.player2}</span>
                     <span className="bg-lime-500 text-black px-2 py-1 rounded font-bold text-sm">{player2Score}</span>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-gray-700 text-center">
+                  {/* <div className="mt-2 pt-2 border-t border-gray-700 text-center">
                     <span className="text-gray-400 text-xs">{currentMatch.tournament}</span>
                     {currentMatch.status === "live" && (
                       <span className="ml-2 text-red-400 text-xs font-bold flex items-center justify-center gap-1 mt-1">
@@ -266,7 +266,7 @@ export function FloatingPiPWidget() {
                         LIVE NOW
                       </span>
                     )}
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Action Buttons */}
