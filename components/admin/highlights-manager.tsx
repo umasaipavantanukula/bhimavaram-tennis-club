@@ -191,7 +191,7 @@ export function HighlightsManager() {
               Add Highlight
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] sm:w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingHighlight ? "Edit" : "Add"} Highlight</DialogTitle>
               <DialogDescription>

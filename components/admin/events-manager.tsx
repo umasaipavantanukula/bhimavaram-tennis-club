@@ -172,7 +172,7 @@ export function EventsManager() {
               Add Event
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] sm:w-full max-w-md">
             <DialogHeader>
               <DialogTitle>{editingEvent ? "Edit Event" : "Add New Event"}</DialogTitle>
               <DialogDescription>{editingEvent ? "Update event details" : "Create a new club event"}</DialogDescription>

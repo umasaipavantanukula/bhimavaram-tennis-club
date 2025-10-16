@@ -165,7 +165,7 @@ export function MatchesManager() {
               Add Match
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="w-[95vw] sm:w-full max-w-md">
             <DialogHeader>
               <DialogTitle>{editingMatch ? "Edit Match" : "Add New Match"}</DialogTitle>
               <DialogDescription>
