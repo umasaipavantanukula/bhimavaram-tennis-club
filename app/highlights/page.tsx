@@ -235,7 +235,7 @@ export default function HighlightsPage() {
                   <div className="relative">
                     <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded-t-lg overflow-hidden">
                       {/* Show video if playing, otherwise show thumbnail */}
-                      {playingVideo === highlight.id && highlight.videoUrl ? (
+                      {playingVideo === highlight.id && (highlight.videoUrl || highlight.youtubeUrl) ? (
                         <div className="relative">
                           {/* Loading indicator */}
                           {loadingVideo === highlight.id && (
@@ -244,29 +244,34 @@ export default function HighlightsPage() {
                             </div>
                           )}
                           
-                          {/* Handle YouTube/Vimeo embeds */}
-                          {highlight.videoUrl.includes('youtube.com') || highlight.videoUrl.includes('youtu.be') || highlight.videoUrl.includes('vimeo.com') ? (
-                            <iframe
-                              className="w-full h-full"
-                              src={getEmbedUrl(highlight.videoUrl)}
-                              frameBorder="0"
-                              allowFullScreen
-                              title={highlight.title}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            />
-                          ) : (
-                            <video
-                              className="w-full h-full object-cover"
-                              controls
-                              autoPlay
-                              onError={() => handleVideoError(highlight.id!, highlight.videoUrl || '')}
-                            >
-                              <source src={highlight.videoUrl} type="video/mp4" />
-                              <source src={highlight.videoUrl} type="video/webm" />
-                              <source src={highlight.videoUrl} type="video/ogg" />
-                              Your browser does not support the video tag.
-                            </video>
-                          )}
+                          {/* Determine which URL to use */}
+                          {(() => {
+                            const videoSource = highlight.youtubeUrl || highlight.videoUrl || ''
+                            const isEmbedUrl = videoSource.includes('youtube.com') || videoSource.includes('youtu.be') || videoSource.includes('vimeo.com')
+                            
+                            return isEmbedUrl ? (
+                              <iframe
+                                className="w-full h-full"
+                                src={getEmbedUrl(videoSource)}
+                                frameBorder="0"
+                                allowFullScreen
+                                title={highlight.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              />
+                            ) : (
+                              <video
+                                className="w-full h-full object-cover"
+                                controls
+                                autoPlay
+                                onError={() => handleVideoError(highlight.id!, videoSource)}
+                              >
+                                <source src={videoSource} type="video/mp4" />
+                                <source src={videoSource} type="video/webm" />
+                                <source src={videoSource} type="video/ogg" />
+                                Your browser does not support the video tag.
+                              </video>
+                            )
+                          })()}
                           {/* Close button */}
                           <button
                             onClick={() => setPlayingVideo(null)}
@@ -289,7 +294,7 @@ export default function HighlightsPage() {
                           <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all duration-300"></div>
                           
                           {/* Play button overlay for videos */}
-                          {highlight.videoUrl && highlight.videoUrl.trim() !== '' && !failedVideos.has(highlight.id!) && (
+                          {(highlight.videoUrl || highlight.youtubeUrl) && (highlight.videoUrl?.trim() !== '' || highlight.youtubeUrl?.trim() !== '') && !failedVideos.has(highlight.id!) && (
                             <div 
                               className="absolute inset-0 flex items-center justify-center cursor-pointer"
                               onClick={() => handleVideoPlay(highlight.id!)}
@@ -346,8 +351,8 @@ export default function HighlightsPage() {
 
                       {/* Media indicators */}
                       <div className="absolute bottom-3 right-3 flex gap-2">
-                        {highlight.videoUrl && highlight.videoUrl.trim() !== '' && (
-                          <div className="w-8 h-8 bg-red-500/90 rounded-full flex items-center justify-center" title={`Video: ${highlight.videoUrl}`}>
+                        {((highlight.videoUrl && highlight.videoUrl.trim() !== '') || (highlight.youtubeUrl && highlight.youtubeUrl.trim() !== '')) && (
+                          <div className="w-8 h-8 bg-red-500/90 rounded-full flex items-center justify-center" title={`Video: ${highlight.youtubeUrl || highlight.videoUrl}`}>
                             <Video className="h-4 w-4 text-white" />
                           </div>
                         )}

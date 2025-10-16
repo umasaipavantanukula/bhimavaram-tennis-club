@@ -1,8 +1,19 @@
 [
   {
-    "origin": ["http://localhost:3000", "https://yourdomain.com"],
+    "origin": [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://bhimavaram-tennis-club.vercel.app",
+      "https://*.vercel.app"
+    ],
     "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
-    "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"],
+    "responseHeader": [
+      "Content-Type",
+      "Content-Length",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Headers",
+      "Access-Control-Allow-Methods"
+    ],
     "maxAgeSeconds": 3600
   }
 ]

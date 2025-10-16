@@ -49,6 +49,7 @@ export function HighlightsManager() {
     players: "",
     date: "",
     videoUrl: "",
+    youtubeUrl: "",
     thumbnailUrl: "",
     imageUrls: [] as string[],
     featured: false
@@ -63,6 +64,7 @@ export function HighlightsManager() {
       players: "",
       date: "",
       videoUrl: "",
+      youtubeUrl: "",
       thumbnailUrl: "",
       imageUrls: [],
       featured: false
@@ -88,6 +90,7 @@ export function HighlightsManager() {
         score: "Match", // Default value since score field is removed
         thumbnailUrl: formData.thumbnailUrl || "/placeholder.jpg",
         videoUrl: formData.videoUrl.trim(), // Always include videoUrl field, even if empty
+        youtubeUrl: formData.youtubeUrl.trim(), // YouTube embed URL
         imageUrls: imageUrlsArray,
         featured: formData.featured
       }
@@ -124,6 +127,7 @@ export function HighlightsManager() {
       players: highlight.players.join(", "),
       date: highlight.date.toISOString().split('T')[0],
       videoUrl: highlight.videoUrl || "",
+      youtubeUrl: highlight.youtubeUrl || "",
       thumbnailUrl: highlight.thumbnailUrl,
       imageUrls: highlight.imageUrls,
       featured: highlight.featured
@@ -390,6 +394,27 @@ export function HighlightsManager() {
                     Maximum file size: 100MB. Supported formats: MP4, WebM, AVI, MOV
                   </p>
                 </div>
+              </div>
+
+              {/* YouTube URL Input */}
+              <div className="space-y-2">
+                <Label htmlFor="youtubeUrl">YouTube Video URL (Alternative)</Label>
+                <Input
+                  id="youtubeUrl"
+                  value={formData.youtubeUrl}
+                  onChange={(e) => setFormData(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+                  placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                  type="url"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Paste a YouTube video URL as an alternative to uploading. This will be used if no video file is uploaded.
+                </p>
+                {formData.youtubeUrl && (
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <Video className="h-4 w-4" />
+                    YouTube video will be embedded
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">

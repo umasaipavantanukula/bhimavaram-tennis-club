@@ -512,6 +512,7 @@ export interface MatchHighlight {
   description: string
   thumbnailUrl: string
   videoUrl?: string
+  youtubeUrl?: string
   imageUrls: string[]
   matchType: "tournament" | "friendly" | "training" | "championship"
   players: string[]
