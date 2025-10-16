@@ -27,7 +27,9 @@ export function HeroManager() {
     imageUrl: "",
     accentColor: "from-blue-400 to-purple-400",
     isActive: true,
-    order: 1
+    order: 1,
+    title: "Master Your Game",
+    subtitle: "Professional Training"
   })
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -123,8 +125,8 @@ export function HeroManager() {
       const slideData = {
         ...formData,
         imageUrl,
-        title: "Master Your Game",
-        subtitle: "Professional Training"
+        title: formData.title,
+        subtitle: formData.subtitle
       }
 
       if (editingSlide) {
@@ -155,7 +157,9 @@ export function HeroManager() {
       imageUrl: slide.imageUrl,
       accentColor: slide.accentColor,
       isActive: slide.isActive,
-      order: slide.order
+      order: slide.order,
+      title: slide.title || "Master Your Game",
+      subtitle: slide.subtitle || "Professional Training"
     })
     setPreviewUrl(slide.imageUrl)
     setIsCreating(true)
@@ -194,7 +198,9 @@ export function HeroManager() {
       imageUrl: "",
       accentColor: "from-blue-400 to-purple-400",
       isActive: true,
-      order: slides.length + 1
+      order: slides.length + 1,
+      title: "Master Your Game",
+      subtitle: "Professional Training"
     })
     setSelectedFile(null)
     setPreviewUrl(null)
@@ -249,6 +255,22 @@ export function HeroManager() {
         {isCreating && (
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <Label htmlFor="title">Hero Main Text</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Master Your Game"
+                />
+                <Label htmlFor="subtitle">Hero Sub Text</Label>
+                <Input
+                  id="subtitle"
+                  value={formData.subtitle}
+                  onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
+                  placeholder="Professional Training"
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="space-y-4">
@@ -411,9 +433,9 @@ export function HeroManager() {
                   </div>
                   
                   <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-1 text-gray-500">Master Your Game</h3>
-                    <p className="text-xs text-gray-500 mb-2">Professional Training</p>
-                    <p className="text-xs text-gray-400 mb-2 italic">Permanent text for all slides</p>
+                    <h3 className="font-semibold text-base mb-1 text-gray-800">Bhimavaram Tennis Club</h3>
+                    <p className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{slide.title}</p>
+                    <p className="text-lg text-amber-500 font-medium">{slide.subtitle}</p>
                     <div className={`w-full h-2 rounded mb-3 bg-gradient-to-r ${slide.accentColor}`}></div>
                     
                     <div className="flex items-center justify-between">

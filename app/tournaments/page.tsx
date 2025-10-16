@@ -47,13 +47,6 @@ export default function TournamentsPage() {
     let filtered = matches
 
     // Filter by player
-    if (playerFilter !== "all") {
-      filtered = filtered.filter(
-        (match) => 
-          match.player1.toLowerCase().includes(playerFilter.toLowerCase()) ||
-          match.player2.toLowerCase().includes(playerFilter.toLowerCase())
-      )
-    }
 
     // Filter by venue
     if (venueFilter !== "all") {
@@ -168,54 +161,8 @@ export default function TournamentsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-4">
             {/* Players Filter */}
-            <Select value={playerFilter} onValueChange={setPlayerFilter}>
-              <SelectTrigger className="w-48 bg-white border-gray-300 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="ALL PLAYERS" />
-                </div>
-                <ChevronDown className="h-4 w-4" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">ALL PLAYERS</SelectItem>
-                {getUniquePlayers().map((player) => (
-                  <SelectItem key={player} value={player}>{player}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {/* ...existing code... */}
 
-            {/* Venues Filter */}
-            <Select value={venueFilter} onValueChange={setVenueFilter}>
-              <SelectTrigger className="w-48 bg-white border-gray-300 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="ALL VENUES" />
-                </div>
-                <ChevronDown className="h-4 w-4" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">ALL VENUES</SelectItem>
-                {getUniqueVenues().map((venue) => (
-                  <SelectItem key={venue} value={venue || ""}>{venue || "TBD"}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Season Filter */}
-            <Select value={seasonFilter} onValueChange={setSeasonFilter}>
-              <SelectTrigger className="w-48 bg-white border-gray-300 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="SEASON 2025" />
-                </div>
-                <ChevronDown className="h-4 w-4" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2025">SEASON 2025</SelectItem>
-                <SelectItem value="2024">SEASON 2024</SelectItem>
-                <SelectItem value="all">ALL SEASONS</SelectItem>
-              </SelectContent>
-            </Select>
 
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -287,7 +234,7 @@ export default function TournamentsPage() {
                           {/* Player 1 Section */}
                           <div className="flex items-center gap-4">
                             {/* Player 1 Photo - Medium Size */}
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-blue-300 shadow-md">
+                            <div className="w-20 h-24 bg-white overflow-hidden shadow-md flex items-center justify-center">
                               {getPlayerImage(match.player1) ? (
                                 <img 
                                   src={getPlayerImage(match.player1)!} 
@@ -315,7 +262,7 @@ export default function TournamentsPage() {
                             {actualStatus === "upcoming" ? "-" : (player1Score || "0")}
                           </div>
 
-                          {/* VS Divider */}
+                          {/* VS Divider and Watch Live (centered) */}
                           <div className="flex flex-col items-center px-6">
                             <div className="text-2xl font-black text-gray-400 tracking-wider">VS</div>
                             {actualStatus === "live" && (
@@ -324,6 +271,17 @@ export default function TournamentsPage() {
                                 <span className="text-xs font-bold text-red-500 uppercase">Live</span>
                               </div>
                             )}
+                            {/* Watch Live button centered below VS */}
+                            {match.live_link && (
+                              <span
+                                className="flex items-center gap-2 text-red-600 font-extrabold text-lg cursor-pointer transition-transform hover:scale-105 mt-4"
+                                onClick={() => window.open(match.live_link, "_blank")}
+                                title="Watch Live on YouTube"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.112C19.403 3.5 12 3.5 12 3.5s-7.403 0-9.386.574A2.994 2.994 0 0 0 .502 6.186C0 8.169 0 12 0 12s0 3.831.502 5.814a2.994 2.994 0 0 0 2.112 2.112C4.597 20.5 12 20.5 12 20.5s7.403 0 9.386-.574a2.994 2.994 0 0 0 2.112-2.112C24 15.831 24 12 24 12s0-3.831-.502-5.814z" fill="#FF0000"/><path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#fff"/></svg>
+                                <span>Watch Live</span>
+                              </span>
+                            )}
                           </div>
 
                           {/* Player 2 Score */}
@@ -331,16 +289,15 @@ export default function TournamentsPage() {
                             {actualStatus === "upcoming" ? "-" : (player2Score || "0")}
                           </div>
 
-                          {/* Player 2 Section */}
+                          {/* Player 2 Section with Watch Live */}
                           <div className="flex items-center gap-4">
                             {/* Player 2 Details */}
                             <div className="text-right">
                               <div className="font-bold text-gray-900 text-base">{match.player2}</div>
                               <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
                             </div>
-                            
                             {/* Player 2 Photo - Medium Size */}
-                            <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-red-300 shadow-md">
+                            <div className="w-20 h-24 bg-white overflow-hidden shadow-md flex items-center justify-center">
                               {getPlayerImage(match.player2) ? (
                                 <img 
                                   src={getPlayerImage(match.player2)!} 
@@ -355,6 +312,7 @@ export default function TournamentsPage() {
                                 </div>
                               )}
                             </div>
+                            {/* ...existing code... */}
                           </div>
                         </div>
 
@@ -364,7 +322,7 @@ export default function TournamentsPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               {/* Player 1 Photo */}
-                              <div className="w-14 h-14 rounded-full overflow-hidden border-3 border-blue-300 shadow-md">
+                              <div className="w-16 h-20 bg-white overflow-hidden shadow-md flex items-center justify-center">
                                 {getPlayerImage(match.player1) ? (
                                   <img 
                                     src={getPlayerImage(match.player1)!} 
@@ -393,7 +351,7 @@ export default function TournamentsPage() {
                             </div>
                           </div>
 
-                          {/* VS Divider */}
+                          {/* VS Divider and Watch Live (centered, mobile) */}
                           <div className="flex items-center justify-center py-2">
                             <div className="flex-1 h-px bg-gray-300"></div>
                             <div className="px-4 flex flex-col items-center">
@@ -404,6 +362,17 @@ export default function TournamentsPage() {
                                   <span className="text-xs font-bold text-red-500 uppercase">Live</span>
                                 </div>
                               )}
+                              {/* Watch Live button centered below VS (mobile) */}
+                              {match.live_link && (
+                                <span
+                                  className="flex items-center gap-2 text-red-600 font-extrabold text-lg cursor-pointer transition-transform hover:scale-105 mt-3"
+                                  onClick={() => window.open(match.live_link, "_blank")}
+                                  title="Watch Live on YouTube"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M23.498 6.186a2.994 2.994 0 0 0-2.112-2.112C19.403 3.5 12 3.5 12 3.5s-7.403 0-9.386.574A2.994 2.994 0 0 0 .502 6.186C0 8.169 0 12 0 12s0 3.831.502 5.814a2.994 2.994 0 0 0 2.112 2.112C4.597 20.5 12 20.5 12 20.5s7.403 0 9.386-.574a2.994 2.994 0 0 0 2.112-2.112C24 15.831 24 12 24 12s0-3.831-.502-5.814z" fill="#FF0000"/><path d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#fff"/></svg>
+                                  <span>Watch Live</span>
+                                </span>
+                              )}
                             </div>
                             <div className="flex-1 h-px bg-gray-300"></div>
                           </div>
@@ -412,7 +381,7 @@ export default function TournamentsPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               {/* Player 2 Photo */}
-                              <div className="w-14 h-14 rounded-full overflow-hidden border-3 border-red-300 shadow-md">
+                              <div className="w-16 h-20 bg-white overflow-hidden shadow-md flex items-center justify-center">
                                 {getPlayerImage(match.player2) ? (
                                   <img 
                                     src={getPlayerImage(match.player2)!} 
@@ -427,14 +396,13 @@ export default function TournamentsPage() {
                                   </div>
                                 )}
                               </div>
-                              
                               {/* Player 2 Details */}
                               <div>
                                 <div className="font-bold text-gray-900 text-sm">{match.player2}</div>
                                 <div className="text-xs text-gray-500 uppercase tracking-wide">Senior</div>
                               </div>
+                              {/* ...existing code... */}
                             </div>
-                            
                             {/* Player 2 Score */}
                             <div className="text-3xl font-extrabold text-green-600">
                               {actualStatus === "upcoming" ? "-" : (player2Score || "0")}

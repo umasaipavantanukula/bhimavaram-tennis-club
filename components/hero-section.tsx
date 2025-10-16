@@ -35,7 +35,7 @@ export function HeroSection() {
       subtitle: "Build Your Legacy",
       accentColor: "from-amber-400 to-orange-400"
     }
-  ];
+  ]
 
   useEffect(() => {
     loadHeroSlides()
@@ -135,30 +135,35 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Background Elements */}
+    <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Animated Background Particles */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-20 h-20 bg-emerald-500/20 rounded-full animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/3 w-16 h-16 bg-blue-500/20 rounded-full animate-bounce"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-24 h-24 bg-orange-500/15 rounded-full animate-ping"></div>
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-white/10 rounded-full animate-float"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 10}s`,
+                  animationDuration: `${5 + Math.random() * 10}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
 
-      {/* Carousel */}
-      <div className="relative h-full w-full">
+        {/* Enhanced Carousel Background */}
         {slides.map((slide, index) => (
           <div
-            key={index}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-              index === currentSlide
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-110"
+            key={slide.id}
+            className={`absolute inset-0 transition-all duration-1500 ease-in-out ${
+              index === currentSlide 
+                ? 'opacity-100 scale-105' 
+                : 'opacity-0 scale-95 pointer-events-none'
             }`}
-            style={{
-              backgroundImage: `url(${slide.image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
           >
             {/* Full Coverage Background Image */}
             <div 
@@ -188,29 +193,23 @@ export function HeroSection() {
       {/* All Content - Bottom Left */}
       <div className="absolute bottom-12 left-8 right-8 z-20 max-w-2xl animate-slide-in-left">
         <div className="group">
-          {/* Location Tag */}
-          <div className="text-white/80 text-sm font-light tracking-widest uppercase mb-4 transform transition-all duration-700 group-hover:translate-x-2">
-            BHIMAVARAM
+          {/* Static Club Name Above Image */}
+          <div className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2 leading-tight">
+            Bhimavaram Tennis Club
           </div>
-          
-          {/* Club Name */}
-          <div className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-6 leading-tight">
-            TENNIS CLUB
-          </div>
-          
-          {/* Main Hero Title */}
+          {/* Main Hero Title (Dynamic from slide data) */}
           <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
             <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent block">
-              {slides.length > 0 && slides[currentSlide] ? slides[currentSlide].title : "Master Your Game"}
+              {slides.length > 0 && slides[currentSlide] && slides[currentSlide].title ? slides[currentSlide].title : "Master Your Game"}
             </span>
             <span className="bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent block">
-              {slides.length > 0 && slides[currentSlide] ? slides[currentSlide].subtitle : "Professional Training"}
+              {slides.length > 0 && slides[currentSlide] && slides[currentSlide].subtitle ? slides[currentSlide].subtitle : "Professional Training"}
             </span>
           </h1>
           
           {/* Description */}
           <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed max-w-lg">
-            Join Bhimavaram's premier tennis club and unlock your true potential with world-class coaching and facilities.
+        
           </p>
           
           {/* CTA Buttons */}
@@ -235,75 +234,42 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Enhanced Navigation Buttons */}
-      <div className="absolute top-1/2 left-6 right-6 transform -translate-y-1/2 flex justify-between z-30">
-        <button
-          onClick={prevSlide}
-          className="group relative p-4 rounded-full bg-white/10 backdrop-blur-xl text-white hover:bg-white/20 transition-all duration-500 border border-white/20 hover:border-white/40 hover:scale-110 shadow-2xl hover:shadow-glow"
-        >
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
-        </button>
-        
-        <button
-          onClick={nextSlide}
-          className="group relative p-4 rounded-full bg-white/10 backdrop-blur-xl text-white hover:bg-white/20 transition-all duration-500 border border-white/20 hover:border-white/40 hover:scale-110 shadow-2xl hover:shadow-glow"
-        >
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <svg className="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
-        </button>
-      </div>
+      {/* ...existing code... */}
 
-      {/* Enhanced Indicators with Glow */}
-      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 flex space-x-4 z-30">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index === currentSlide
-                ? 'bg-white scale-125'
-                : 'bg-white/50 hover:bg-white/80'
-            }`}
-          >
-            <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${slides[index]?.accentColor || 'from-blue-400 to-purple-400'} opacity-0 group-hover:opacity-30 ${
-              index === currentSlide ? 'opacity-50' : ''
-            } blur-sm`} />
-          </button>
-        ))}
-      </div>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-all duration-300 group"
-      >
-        <svg className="w-6 h-6 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-all duration-300 group"
-      >
-        <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-4 right-8 z-20 animate-bounce">
-        <div className="text-white/60 text-sm rotate-90 origin-center whitespace-nowrap">
-          Scroll Down
-        </div>
-      </div>
+      {/* Add Tailwind animations in your CSS */}
+      <style jsx>{`
+        @keyframes slide-in-left {
+          from { transform: translateX(-100px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.4; }
+        }
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-slide-in-left { animation: slide-in-left 1s ease-out; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
+        .shadow-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        .shadow-glow-active { box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+        .shadow-glow-inactive { box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+        .shadow-glow-white { box-shadow: 0 0 30px rgba(255, 255, 255, 0.4); }
+        .hover\\:shadow-glow:hover { box-shadow: 0 0 30px rgba(59, 130, 246, 0.4); }
+        .hover\\:shadow-glow-white:hover { box-shadow: 0 0 40px rgba(255, 255, 255, 0.6); }
+      `}</style>
     </section>
-  );
-} 
+  )
+}
