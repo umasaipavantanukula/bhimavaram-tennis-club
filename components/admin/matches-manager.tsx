@@ -40,6 +40,8 @@ export function MatchesManager() {
     court: string;
     live_link: string;
     score?: string;
+    masterText?: string;
+    trainingText?: string;
   };
 
   const [formData, setFormData] = useState<FormData>({
@@ -53,6 +55,8 @@ export function MatchesManager() {
     court: "",
     live_link: "",
     score: "",
+    masterText: "Master Your Game",
+    trainingText: "Professional Training",
   })
 
   useEffect(() => {
@@ -195,6 +199,27 @@ export function MatchesManager() {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Hero Section Dynamic Text Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="masterText">Hero Master Text</Label>
+                  <Input
+                    id="masterText"
+                    value={formData.masterText}
+                    onChange={(e) => setFormData({ ...formData, masterText: e.target.value })}
+                    placeholder="Master Your Game"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="trainingText">Hero Training Text</Label>
+                  <Input
+                    id="trainingText"
+                    value={formData.trainingText}
+                    onChange={(e) => setFormData({ ...formData, trainingText: e.target.value })}
+                    placeholder="Professional Training"
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="player1">Player 1</Label>
