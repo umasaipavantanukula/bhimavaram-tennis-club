@@ -365,10 +365,20 @@ export function MatchesManager() {
                   <TableCell className="font-medium">
                     <div className="flex flex-col">
                       <span className="flex items-center gap-2">
-                        <span className="font-semibold">{match.player1}</span>
+                          <span className="text-xs text-gray-500">Player 1:</span>
+                          <span className="font-semibold">{match.player1}</span>
+                          {/* show player1 score if available */}
+                          {match.score && match.score.includes(" - ") && (
+                            <span className="ml-2 text-sm text-green-700">{(match.score || "").split(" - ")[0]}</span>
+                          )}
                       </span>
                       <span className="flex items-center gap-2 mt-1">
-                        <span className="font-semibold">{match.player2}</span>
+                          <span className="text-xs text-gray-500">Player 2:</span>
+                          <span className="font-semibold text-black-700">{match.player2}</span>
+                          {/* show player2 score if available */}
+                          {match.score && match.score.includes(" - ") && (
+                            <span className="ml-2 text-sm text-green-700">{(match.score || "").split(" - ")[1]}</span>
+                          )}
                       </span>
                     </div>
                   </TableCell>
