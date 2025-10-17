@@ -362,24 +362,32 @@ export function MatchesManager() {
             <TableBody>
               {matches.map((match) => (
                 <TableRow key={match.id}>
-                  <TableCell className="font-medium flex items-center gap-2">
-                    {/* Player 1 */}
-                    {match.player1}
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col">
+                      <span className="flex items-center gap-2">
+                        <span className="font-semibold">{match.player1}</span>
+                      </span>
+                      <span className="flex items-center gap-2 mt-1">
+                        <span className="font-semibold">{match.player2}</span>
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>{match.tournament}</TableCell>
                   <TableCell>{match.date.toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <span className="font-bold text-green-700">{(match.score || "TBD").split(" - ")[0]}</span>
-                    <span className="mx-1 text-gray-500">vs</span>
-                    {/* Player 2 section with photo and Watch Live */}
-                    <span className="font-bold text-blue-700 flex items-center gap-2">
-                      {/* Replace with actual player2 photo if available */}
-                      <span className="flex items-center gap-2">
-                        {/* Example: <img src={match.player2PhotoUrl} alt={match.player2} className="w-10 h-10 rounded-full border-2 border-red-500" /> */}
-                        {match.player2}
-                        {/* Watch Live button removed from admin dashboard as requested */}
-                      </span>
-                    </span>
+                    {match.score ? (
+                      match.score.includes(" - ") ? (
+                        <>
+                          <span className="font-bold text-green-700">{(match.score || "").split(" - ")[0]}</span>
+                          <span className="mx-1 text-gray-500">vs</span>
+                          <span className="font-bold text-green-700">{(match.score || "").split(" - ")[1]}</span>
+                        </>
+                      ) : (
+                        <span className="font-bold">{match.score}</span>
+                      )
+                    ) : (
+                      <span className="text-gray-500">TBD</span>
+                    )}
                   </TableCell>
                   <TableCell>{getStatusBadge(match.status)}</TableCell>
                   <TableCell>
