@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { X, Maximize2 } from "lucide-react"
@@ -179,23 +179,53 @@ const drawScoreToCanvas = () => {
   const score2Width = ctx.measureText(player2Score).width;
   ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
   ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
+    // === LIVE Indicator ===
+if (currentMatch.status === "live") {
+  // Use a time-based continuous pulse so it keeps animating on every redraw
+  const t = Date.now() / 120; // smaller divisor -> smoother / faster pulse
+  const pulse = 3 + Math.abs(Math.sin(t)) * 3; // radius range: 4 -> 8
 
-  // === LIVE Indicator on canvas (top-left corner) ===
-  if (currentMatch.status === "live") {
-    const liveX = 18
-    const liveY = 18
-    ctx.save()
-    ctx.fillStyle = "#ff3b30"
-    ctx.beginPath()
-    ctx.arc(liveX, liveY, 6, 0, 2 * Math.PI)
-    ctx.fill()
+  const cx = 30;
+  const cy = 20;
 
-    ctx.fillStyle = "#ff6b6b"
-    ctx.font = "bold 16px Arial"
-    ctx.textBaseline = 'middle'
-    ctx.fillText("LIVE", liveX + 14, liveY)
-    ctx.restore()
-  }
+  // Outer soft glow (multiple rings for stronger effect)
+  ctx.fillStyle = `rgba(255, 0, 0, 0.12)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 8, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255, 0, 0, 0.08)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 5, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Main glow
+  ctx.fillStyle = `rgba(255, 0, 0, 0.25)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 2, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Inner solid circle
+  ctx.fillStyle = "#ff0000";
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.max(2, pulse - 1), 0, 2 * Math.PI);
+  ctx.fill();
+
+  // "LIVE" label with subtle shadow
+  ctx.save();
+  ctx.font = "bold 18px Arial";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+
+  // shadow
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillText("Live", cx + 14 + 1, cy + 1);
+
+  // foreground
+  ctx.fillStyle = "#ff4d4d";
+  ctx.fillText("Live", cx + 14, cy);
+  ctx.restore();
+}
 };
 
 
