@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { X, Maximize2 } from "lucide-react"
@@ -223,7 +223,7 @@ if (currentMatch.status === "live") {
 
   // foreground
   ctx.fillStyle = "#ff4d4d";
-  ctx.fillText("Live", cx + 14, cy);
+  ctx.fillText("LIVE", cx + 14, cy);
   ctx.restore();
 }
 };
