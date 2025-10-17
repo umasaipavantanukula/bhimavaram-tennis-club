@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { X, Maximize2 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
@@ -31,46 +31,51 @@ export function FloatingPiPWidget() {
     return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
+  // Real-time listener for match updates (replaces polling)
   useEffect(() => {
-    const fetchMatch = async () => {
-      try {
-        setLoading(true)
-        const matches = await matchOperations.getAll()
-        const now = new Date()
-        
-        const liveMatch = matches.find(match => match.status === "live")
-        if (liveMatch) {
-          setCurrentMatch(liveMatch)
-          setLoading(false)
-          return
-        }
-        
-        const upcomingMatches = matches
-          .filter(match => match.status === "upcoming" && match.date >= now)
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-        
-        if (upcomingMatches.length > 0) {
-          setCurrentMatch(upcomingMatches[0])
-        } else {
-          const completedMatches = matches
-            .filter(match => match.status === "completed")
-            .sort((a, b) => b.date.getTime() - a.date.getTime())
-          
-          if (completedMatches.length > 0) {
-            setCurrentMatch(completedMatches[0])
-          }
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching match data:", error)
-        setLoading(false)
-      }
-    }
+    console.log("🟢 [Floating PiP] Setting up real-time listener")
+    setLoading(true)
 
-    fetchMatch()
-    const interval = setInterval(fetchMatch, 30000)
-    return () => clearInterval(interval)
+    const unsubscribe = matchOperations.subscribeToMatches((matches) => {
+      console.log("🟢 [Floating PiP] Real-time update received:", matches.length, "matches")
+      
+      const now = new Date()
+      
+      // Priority 1: Find live match
+      const liveMatch = matches.find(match => match.status === "live")
+      if (liveMatch) {
+        setCurrentMatch(liveMatch)
+        setLoading(false)
+        return
+      }
+      
+      // Priority 2: Find upcoming matches
+      const upcomingMatches = matches
+        .filter(match => match.status === "upcoming" && match.date >= now)
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+      
+      if (upcomingMatches.length > 0) {
+        setCurrentMatch(upcomingMatches[0])
+        setLoading(false)
+        return
+      }
+      
+      // Priority 3: Show most recent completed match
+      const completedMatches = matches
+        .filter(match => match.status === "completed")
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+      
+      if (completedMatches.length > 0) {
+        setCurrentMatch(completedMatches[0])
+      }
+      
+      setLoading(false)
+    })
+
+    return () => {
+      console.log("🟢 [Floating PiP] Cleaning up real-time listener")
+      unsubscribe()
+    }
   }, [])
 
   useEffect(() => {
@@ -79,9 +84,10 @@ export function FloatingPiPWidget() {
     }
   }, [isOpen])
 
-const drawScoreToCanvas = () => {
-  const canvas = canvasRef.current;
-  if (!canvas || !currentMatch) return;
+  // Draw score to canvas - wrapped in useCallback
+  const drawScoreToCanvas = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas || !currentMatch) return
 
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -181,8 +187,32 @@ ctx.restore();
   const score2Width = ctx.measureText(player2Score).width;
   ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
   ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
-};
+  }, [currentMatch])
 
+  useEffect(() => {
+    if (!isOpen) {
+      exitPiP()
+    }
+  }, [isOpen])
+
+  // Update canvas whenever match data changes (REAL-TIME UPDATE)
+  useEffect(() => {
+    if (currentMatch && !loading) {
+      console.log("🟢 [Floating PiP] Updating canvas with new match data")
+      drawScoreToCanvas()
+    }
+  }, [currentMatch, loading, drawScoreToCanvas])
+
+  // Continuous canvas refresh when PiP is active
+  useEffect(() => {
+    if (!isPiPActive) return
+
+    const refreshInterval = setInterval(() => {
+      drawScoreToCanvas()
+    }, 100) // Refresh every 100ms for smooth updates
+
+    return () => clearInterval(refreshInterval)
+  }, [isPiPActive, drawScoreToCanvas])
 
   const enterPiP = async () => {
     try {
