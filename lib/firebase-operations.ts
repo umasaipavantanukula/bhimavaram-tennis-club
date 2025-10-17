@@ -835,3 +835,91 @@ export const heroOperations = {
     return await getDownloadURL(storageRef)
   },
 }
+
+// Dashboard Statistics Operations
+export interface DashboardStats {
+  totalMatches: number
+  liveMatches: number
+  upcomingMatches: number
+  completedMatches: number
+  totalProfiles: number
+  totalGalleryItems: number
+  totalNewsArticles: number
+  totalEvents: number
+  totalHighlights: number
+}
+
+export const dashboardOperations = {
+  async getStats(): Promise<DashboardStats> {
+    const database = ensureDb()
+    
+    try {
+      // Get all collections in parallel for better performance
+      const [matchesSnap, profilesSnap, gallerySnap, newsSnap, eventsSnap, highlightsSnap] = await Promise.all([
+        getDocs(collection(database, "matches")),
+        getDocs(collection(database, "profiles")),
+        getDocs(collection(database, "gallery")),
+        getDocs(collection(database, "news")),
+        getDocs(collection(database, "events")),
+        getDocs(collection(database, "highlights")),
+      ])
+
+      // Count matches by status
+      let liveMatches = 0
+      let upcomingMatches = 0
+      let completedMatches = 0
+      
+      matchesSnap.docs.forEach(doc => {
+        const status = doc.data().status
+        if (status === "live") liveMatches++
+        else if (status === "upcoming") upcomingMatches++
+        else if (status === "completed") completedMatches++
+      })
+
+      return {
+        totalMatches: matchesSnap.size,
+        liveMatches,
+        upcomingMatches,
+        completedMatches,
+        totalProfiles: profilesSnap.size,
+        totalGalleryItems: gallerySnap.size,
+        totalNewsArticles: newsSnap.size,
+        totalEvents: eventsSnap.size,
+        totalHighlights: highlightsSnap.size,
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error)
+      return {
+        totalMatches: 0,
+        liveMatches: 0,
+        upcomingMatches: 0,
+        completedMatches: 0,
+        totalProfiles: 0,
+        totalGalleryItems: 0,
+        totalNewsArticles: 0,
+        totalEvents: 0,
+        totalHighlights: 0,
+      }
+    }
+  },
+
+  // Subscribe to real-time dashboard stats updates
+  subscribeToStats(callback: (stats: DashboardStats) => void) {
+    const database = ensureDb()
+    
+    // Subscribe to all collections
+    const unsubscribers = [
+      onSnapshot(collection(database, "matches"), () => this.getStats().then(callback)),
+      onSnapshot(collection(database, "profiles"), () => this.getStats().then(callback)),
+      onSnapshot(collection(database, "gallery"), () => this.getStats().then(callback)),
+      onSnapshot(collection(database, "news"), () => this.getStats().then(callback)),
+      onSnapshot(collection(database, "events"), () => this.getStats().then(callback)),
+      onSnapshot(collection(database, "highlights"), () => this.getStats().then(callback)),
+    ]
+
+    // Return a function to unsubscribe from all listeners
+    return () => {
+      unsubscribers.forEach(unsub => unsub())
+    }
+  },
+}
