@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { X, Maximize2 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
@@ -31,114 +31,47 @@ export function FloatingPiPWidget() {
     return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
-  // Real-time listener for match updates (replaces polling)
   useEffect(() => {
-    console.log("🟢 [Floating PiP] Setting up real-time listener")
-    setLoading(true)
-
-    const unsubscribe = matchOperations.subscribeToMatches((matches) => {
-      console.log("🟢 [Floating PiP] Real-time update received:", matches.length, "matches")
-      
-      const now = new Date()
-      
-      // Priority 1: Find live match
-      const liveMatch = matches.find(match => match.status === "live")
-      if (liveMatch) {
-        setCurrentMatch(liveMatch)
+    const fetchMatch = async () => {
+      try {
+        setLoading(true)
+        const matches = await matchOperations.getAll()
+        const now = new Date()
+        
+        const liveMatch = matches.find(match => match.status === "live")
+        if (liveMatch) {
+          setCurrentMatch(liveMatch)
+          setLoading(false)
+          return
+        }
+        
+        const upcomingMatches = matches
+          .filter(match => match.status === "upcoming" && match.date >= now)
+          .sort((a, b) => a.date.getTime() - b.date.getTime())
+        
+        if (upcomingMatches.length > 0) {
+          setCurrentMatch(upcomingMatches[0])
+        } else {
+          const completedMatches = matches
+            .filter(match => match.status === "completed")
+            .sort((a, b) => b.date.getTime() - a.date.getTime())
+          
+          if (completedMatches.length > 0) {
+            setCurrentMatch(completedMatches[0])
+          }
+        }
+        
         setLoading(false)
-        return
-      }
-      
-      // Priority 2: Find upcoming matches
-      const upcomingMatches = matches
-        .filter(match => match.status === "upcoming" && match.date >= now)
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-      
-      if (upcomingMatches.length > 0) {
-        setCurrentMatch(upcomingMatches[0])
+      } catch (error) {
+        console.error("Error fetching match data:", error)
         setLoading(false)
-        return
       }
-      
-      // Priority 3: Show most recent completed match
-      const completedMatches = matches
-        .filter(match => match.status === "completed")
-        .sort((a, b) => b.date.getTime() - a.date.getTime())
-      
-      if (completedMatches.length > 0) {
-        setCurrentMatch(completedMatches[0])
-      }
-      
-      setLoading(false)
-    })
-
-    return () => {
-      console.log("🟢 [Floating PiP] Cleaning up real-time listener")
-      unsubscribe()
     }
+
+    fetchMatch()
+    const interval = setInterval(fetchMatch, 30000)
+    return () => clearInterval(interval)
   }, [])
-
-  // Draw score to canvas - wrapped in useCallback
-  const drawScoreToCanvas = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !currentMatch) return
-
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    const { player1Score, player2Score } = parseScore(currentMatch.score)
-
-    // Compact dimensions - smaller PiP window
-    canvas.width = 280
-    canvas.height = 140
-
-    // Black background
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    // Draw LIVE indicator with red pulsing dot if status is live
-    if (currentMatch.status === "live") {
-      // Red dot
-      ctx.fillStyle = "#ef4444"
-      ctx.beginPath()
-      ctx.arc(15, 15, 6, 0, 2 * Math.PI)
-      ctx.fill()
-      
-      // LIVE text
-      ctx.fillStyle = "#ef4444"
-      ctx.font = "bold 12px Arial"
-      ctx.fillText("LIVE", 28, 20)
-    }
-
-    // Player 1 - Name and Score
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 14px Arial"
-    ctx.fillText(currentMatch.player1, 15, 60)
-    
-    // Score box for player 1
-    ctx.fillStyle = "#84cc16"
-    ctx.fillRect(190, 45, 70, 35)
-    ctx.fillStyle = "#000000"
-    ctx.font = "bold 24px Arial"
-    ctx.fillText(player1Score, 205, 70)
-
-    // VS divider
-    ctx.fillStyle = "#84cc16"
-    ctx.font = "bold 10px Arial"
-    ctx.fillText("VS", 130, 80)
-
-    // Player 2 - Name and Score
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 14px Arial"
-    ctx.fillText(currentMatch.player2, 15, 115)
-    
-    // Score box for player 2
-    ctx.fillStyle = "#84cc16"
-    ctx.fillRect(190, 100, 70, 35)
-    ctx.fillStyle = "#000000"
-    ctx.font = "bold 24px Arial"
-    ctx.fillText(player2Score, 205, 125)
-  }, [currentMatch])
 
   useEffect(() => {
     if (!isOpen) {
@@ -146,24 +79,108 @@ export function FloatingPiPWidget() {
     }
   }, [isOpen])
 
-  // Update canvas whenever match data changes (REAL-TIME UPDATE)
-  useEffect(() => {
-    if (currentMatch && !loading) {
-      console.log("🟢 [Floating PiP] Updating canvas with new match data")
-      drawScoreToCanvas()
-    }
-  }, [currentMatch, loading, drawScoreToCanvas])
+const drawScoreToCanvas = () => {
+  const canvas = canvasRef.current;
+  if (!canvas || !currentMatch) return;
 
-  // Continuous canvas refresh when PiP is active
-  useEffect(() => {
-    if (!isPiPActive) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-    const refreshInterval = setInterval(() => {
-      drawScoreToCanvas()
-    }, 100) // Refresh every 100ms for smooth updates
+  const { player1Score, player2Score } = parseScore(currentMatch.score);
 
-    return () => clearInterval(refreshInterval)
-  }, [isPiPActive, drawScoreToCanvas])
+  canvas.width = 700;
+  canvas.height = 200;
+
+  const borderRadius = 10;
+  const rowHeight = canvas.height / 2;
+
+  // === Background ===
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // === Outer rounded container ===
+  ctx.fillStyle = "#1e1e1e";
+  ctx.strokeStyle = "#3a3a3a";
+  ctx.lineWidth = 3;
+
+  const roundedRect = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  };
+
+  roundedRect(5, 5, canvas.width - 10, canvas.height - 10, borderRadius);
+  ctx.fill();
+  ctx.stroke();
+
+  // === Lime angled ends ===
+  const drawAngledBlock = (y) => {
+    ctx.fillStyle = "#9BE22D";
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.7, y);
+    ctx.lineTo(canvas.width - 5, y);
+    ctx.lineTo(canvas.width - 5, y + rowHeight);
+    ctx.lineTo(canvas.width * 0.6, y + rowHeight);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  drawAngledBlock(5);
+  drawAngledBlock(rowHeight + 5);
+
+  // === Middle line (draw after green parts so it's visible) ===
+  ctx.save();
+  const gradient = ctx.createLinearGradient(0, rowHeight, canvas.width, rowHeight);
+  gradient.addColorStop(0, "#5b5e61ff");   // light gray on dark side
+  gradient.addColorStop(0.6, "#5b5e61ff"); // bright in the middle
+  gradient.addColorStop(1, "#5b5e61ff");   // darker near green
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(10, rowHeight);
+  ctx.lineTo(canvas.width - 10, rowHeight);
+  ctx.stroke();
+  ctx.restore();
+
+  // === Player Circles ===
+  const drawCircle = (x, y) => {
+    ctx.fillStyle = "#8b8b8b";
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = "#2e2e2e";
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  };
+
+  drawCircle(35, rowHeight / 2);
+  drawCircle(35, rowHeight + rowHeight / 2);
+
+  // === Player Names ===
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 22px Arial";
+  ctx.fillText(currentMatch.player1, 65, rowHeight / 2 + 8);
+  ctx.fillText(currentMatch.player2, 65, rowHeight + rowHeight / 2 + 8);
+
+  // === Scores ===
+  ctx.fillStyle = "#000000";
+  ctx.font = "bold 50px Arial";
+  const score1Width = ctx.measureText(player1Score).width;
+  const score2Width = ctx.measureText(player2Score).width;
+  ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
+  ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
+};
+
 
   const enterPiP = async () => {
     try {
