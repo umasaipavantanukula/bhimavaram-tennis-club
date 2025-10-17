@@ -103,7 +103,7 @@ const drawScoreToCanvas = () => {
   ctx.strokeStyle = "#3a3a3a";
   ctx.lineWidth = 3;
 
-  const roundedRect = (x, y, w, h, r) => {
+  const roundedRect = (x: number, y: number, w: number, h: number, r: number) => {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -122,7 +122,7 @@ const drawScoreToCanvas = () => {
   ctx.stroke();
 
   // === Lime angled ends ===
-  const drawAngledBlock = (y) => {
+  const drawAngledBlock = (y: number) => {
     ctx.fillStyle = "#9BE22D";
     ctx.beginPath();
     ctx.moveTo(canvas.width * 0.7, y);
@@ -151,7 +151,7 @@ const drawScoreToCanvas = () => {
   ctx.restore();
 
   // === Player Circles ===
-  const drawCircle = (x, y) => {
+  const drawCircle = (x: number, y: number) => {
     ctx.fillStyle = "#8b8b8b";
     ctx.beginPath();
     ctx.arc(x, y, 10, 0, 2 * Math.PI);
