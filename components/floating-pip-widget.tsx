@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { X, Maximize2 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
 import { matchOperations, type Match } from "@/lib/firebase-operations"
@@ -31,55 +31,55 @@ export function FloatingPiPWidget() {
     return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
   }
 
+  // Real-time listener for match updates (replaces polling)
   useEffect(() => {
-    const fetchMatch = async () => {
-      try {
-        setLoading(true)
-        const matches = await matchOperations.getAll()
-        const now = new Date()
-        
-        const liveMatch = matches.find(match => match.status === "live")
-        if (liveMatch) {
-          setCurrentMatch(liveMatch)
-          setLoading(false)
-          return
-        }
-        
-        const upcomingMatches = matches
-          .filter(match => match.status === "upcoming" && match.date >= now)
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-        
-        if (upcomingMatches.length > 0) {
-          setCurrentMatch(upcomingMatches[0])
-        } else {
-          const completedMatches = matches
-            .filter(match => match.status === "completed")
-            .sort((a, b) => b.date.getTime() - a.date.getTime())
-          
-          if (completedMatches.length > 0) {
-            setCurrentMatch(completedMatches[0])
-          }
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error("Error fetching match data:", error)
-        setLoading(false)
-      }
-    }
+    console.log("🟢 [Floating PiP] Setting up real-time listener")
+    setLoading(true)
 
-    fetchMatch()
-    const interval = setInterval(fetchMatch, 30000)
-    return () => clearInterval(interval)
+    const unsubscribe = matchOperations.subscribeToMatches((matches) => {
+      console.log("🟢 [Floating PiP] Real-time update received:", matches.length, "matches")
+      
+      const now = new Date()
+      
+      // Priority 1: Find live match
+      const liveMatch = matches.find(match => match.status === "live")
+      if (liveMatch) {
+        setCurrentMatch(liveMatch)
+        setLoading(false)
+        return
+      }
+      
+      // Priority 2: Find upcoming matches
+      const upcomingMatches = matches
+        .filter(match => match.status === "upcoming" && match.date >= now)
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
+      
+      if (upcomingMatches.length > 0) {
+        setCurrentMatch(upcomingMatches[0])
+        setLoading(false)
+        return
+      }
+      
+      // Priority 3: Show most recent completed match
+      const completedMatches = matches
+        .filter(match => match.status === "completed")
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+      
+      if (completedMatches.length > 0) {
+        setCurrentMatch(completedMatches[0])
+      }
+      
+      setLoading(false)
+    })
+
+    return () => {
+      console.log("🟢 [Floating PiP] Cleaning up real-time listener")
+      unsubscribe()
+    }
   }, [])
 
-  useEffect(() => {
-    if (!isOpen) {
-      exitPiP()
-    }
-  }, [isOpen])
-
-  const drawScoreToCanvas = () => {
+  // Draw score to canvas - wrapped in useCallback
+  const drawScoreToCanvas = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas || !currentMatch) return
 
@@ -88,47 +88,82 @@ export function FloatingPiPWidget() {
 
     const { player1Score, player2Score } = parseScore(currentMatch.score)
 
-    // Rectangle dimensions for PiP (wider aspect ratio)
-    canvas.width = 400
-    canvas.height = 200
+    // Compact dimensions - smaller PiP window
+    canvas.width = 280
+    canvas.height = 140
 
     // Black background
     ctx.fillStyle = "#000000"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Draw LIVE indicator if status is live
+    // Draw LIVE indicator with red pulsing dot if status is live
     if (currentMatch.status === "live") {
+      // Red dot
       ctx.fillStyle = "#ef4444"
-      ctx.fillRect(15, 15, 60, 25)
-      ctx.fillStyle = "#ffffff"
-      ctx.font = "bold 14px Arial"
-      ctx.fillText("LIVE", 25, 32)
+      ctx.beginPath()
+      ctx.arc(15, 15, 6, 0, 2 * Math.PI)
+      ctx.fill()
+      
+      // LIVE text
+      ctx.fillStyle = "#ef4444"
+      ctx.font = "bold 12px Arial"
+      ctx.fillText("LIVE", 28, 20)
     }
 
+    // Player 1 - Name and Score
+    ctx.fillStyle = "#ffffff"
+    ctx.font = "bold 14px Arial"
+    ctx.fillText(currentMatch.player1, 15, 60)
+    
+    // Score box for player 1
     ctx.fillStyle = "#84cc16"
-    ctx.fillRect(260, 50, 120, 50)
-    ctx.fillRect(260, 120, 120, 50)
-
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(currentMatch.player1, 15, 75)
-    
+    ctx.fillRect(190, 45, 70, 35)
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 32px Arial"
-    ctx.fillText(player1Score, 290, 85)
+    ctx.font = "bold 24px Arial"
+    ctx.fillText(player1Score, 205, 70)
 
+    // VS divider
+    ctx.fillStyle = "#84cc16"
+    ctx.font = "bold 10px Arial"
+    ctx.fillText("VS", 130, 80)
+
+    // Player 2 - Name and Score
     ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 18px Arial"
-    ctx.fillText(currentMatch.player2, 15, 150)
+    ctx.font = "bold 14px Arial"
+    ctx.fillText(currentMatch.player2, 15, 115)
     
+    // Score box for player 2
+    ctx.fillStyle = "#84cc16"
+    ctx.fillRect(190, 100, 70, 35)
     ctx.fillStyle = "#000000"
-    ctx.font = "bold 32px Arial"
-    ctx.fillText(player2Score, 290, 160)
+    ctx.font = "bold 24px Arial"
+    ctx.fillText(player2Score, 205, 125)
+  }, [currentMatch])
 
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "12px Arial"
-    ctx.fillText(`${currentMatch.tournament} • ${formatTime(currentMatch.date)}`, 15, 190)
-  }
+  useEffect(() => {
+    if (!isOpen) {
+      exitPiP()
+    }
+  }, [isOpen])
+
+  // Update canvas whenever match data changes (REAL-TIME UPDATE)
+  useEffect(() => {
+    if (currentMatch && !loading) {
+      console.log("🟢 [Floating PiP] Updating canvas with new match data")
+      drawScoreToCanvas()
+    }
+  }, [currentMatch, loading, drawScoreToCanvas])
+
+  // Continuous canvas refresh when PiP is active
+  useEffect(() => {
+    if (!isPiPActive) return
+
+    const refreshInterval = setInterval(() => {
+      drawScoreToCanvas()
+    }, 100) // Refresh every 100ms for smooth updates
+
+    return () => clearInterval(refreshInterval)
+  }, [isPiPActive, drawScoreToCanvas])
 
   const enterPiP = async () => {
     try {
@@ -292,31 +327,7 @@ export function FloatingPiPWidget() {
       )}
 
       {/* Show notification when PiP is active */}
-      {isPiPActive && (
-        <div className="fixed bottom-4 right-4 z-50 bg-black/90 text-white p-3 rounded-lg shadow-2xl max-w-[200px] border border-lime-500/50">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <div className="font-semibold mb-1 text-sm flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                Live Score Floating
-              </div>
-              <div className="text-xs text-gray-300">
-                {currentMatch.player1} vs {currentMatch.player2}
-              </div>
-              <div className="text-xs text-lime-400 mt-1">
-                Score: {player1Score} - {player2Score}
-              </div>
-            </div>
-            <button
-              onClick={exitPiP}
-              className="text-gray-400 hover:text-red-400 transition-colors"
-              title="Exit PiP"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Removed - no notification needed */}
     </>
   )
 }

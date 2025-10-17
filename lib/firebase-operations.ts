@@ -10,6 +10,7 @@ import {
   where,
   Timestamp,
   Firestore,
+  onSnapshot,
 } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL, deleteObject, FirebaseStorage } from "firebase/storage"
 import { db, storage } from "./firebase"
@@ -65,6 +66,58 @@ export const matchOperations = {
       date: doc.data().date.toDate(),
       createdAt: doc.data().createdAt.toDate(),
     })) as Match[]
+  },
+
+  // Real-time listener for matches (WebSocket alternative using Firestore)
+  subscribeToMatches(callback: (matches: Match[]) => void) {
+    const database = ensureDb()
+    const q = query(collection(database, "matches"), orderBy("date", "desc"))
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const matches = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().date.toDate(),
+          createdAt: doc.data().createdAt.toDate(),
+        })) as Match[]
+        callback(matches)
+      },
+      (error) => {
+        console.error("Error in real-time match listener:", error)
+      }
+    )
+    
+    return unsubscribe // Return unsubscribe function
+  },
+
+  // Real-time listener for live matches only
+  subscribeToLiveMatches(callback: (matches: Match[]) => void) {
+    const database = ensureDb()
+    const q = query(
+      collection(database, "matches"),
+      where("status", "in", ["live", "upcoming"]),
+      orderBy("date", "desc")
+    )
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const matches = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          date: doc.data().date.toDate(),
+          createdAt: doc.data().createdAt.toDate(),
+        })) as Match[]
+        callback(matches)
+      },
+      (error) => {
+        console.error("Error in real-time live match listener:", error)
+      }
+    )
+    
+    return unsubscribe
   },
 
   async update(id: string, match: Partial<Match>) {
