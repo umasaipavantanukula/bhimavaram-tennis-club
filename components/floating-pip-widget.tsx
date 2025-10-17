@@ -79,66 +79,110 @@ export function FloatingPiPWidget() {
     }
   }, [isOpen])
 
-  const drawScoreToCanvas = () => {
-    const canvas = canvasRef.current
-    if (!canvas || !currentMatch) return
+const drawScoreToCanvas = () => {
+  const canvas = canvasRef.current;
+  if (!canvas || !currentMatch) return;
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-    const { player1Score, player2Score } = parseScore(currentMatch.score)
+  const { player1Score, player2Score } = parseScore(currentMatch.score);
 
-    // Compact dimensions - smaller PiP window
-    canvas.width = 280
-    canvas.height = 140
+  canvas.width = 700;
+  canvas.height = 200;
 
-    // Black background
-    ctx.fillStyle = "#000000"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+  const borderRadius = 10;
+  const rowHeight = canvas.height / 2;
 
-    // Draw LIVE indicator with red pulsing dot if status is live
-    if (currentMatch.status === "live") {
-      // Red dot
-      ctx.fillStyle = "#ef4444"
-      ctx.beginPath()
-      ctx.arc(15, 15, 6, 0, 2 * Math.PI)
-      ctx.fill()
-      
-      // LIVE text
-      ctx.fillStyle = "#ef4444"
-      ctx.font = "bold 12px Arial"
-      ctx.fillText("LIVE", 28, 20)
-    }
+  // === Background ===
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Player 1 - Name and Score
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 14px Arial"
-    ctx.fillText(currentMatch.player1, 15, 60)
-    
-    // Score box for player 1
-    ctx.fillStyle = "#84cc16"
-    ctx.fillRect(190, 45, 70, 35)
-    ctx.fillStyle = "#000000"
-    ctx.font = "bold 24px Arial"
-    ctx.fillText(player1Score, 205, 70)
+  // === Outer rounded container ===
+  ctx.fillStyle = "#1e1e1e";
+  ctx.strokeStyle = "#3a3a3a";
+  ctx.lineWidth = 3;
 
-    // VS divider
-    ctx.fillStyle = "#84cc16"
-    ctx.font = "bold 10px Arial"
-    ctx.fillText("VS", 130, 80)
+  const roundedRect = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  };
 
-    // Player 2 - Name and Score
-    ctx.fillStyle = "#ffffff"
-    ctx.font = "bold 14px Arial"
-    ctx.fillText(currentMatch.player2, 15, 115)
-    
-    // Score box for player 2
-    ctx.fillStyle = "#84cc16"
-    ctx.fillRect(190, 100, 70, 35)
-    ctx.fillStyle = "#000000"
-    ctx.font = "bold 24px Arial"
-    ctx.fillText(player2Score, 205, 125)
-  }
+  roundedRect(5, 5, canvas.width - 10, canvas.height - 10, borderRadius);
+  ctx.fill();
+  ctx.stroke();
+
+  // === Lime angled ends ===
+  const drawAngledBlock = (y) => {
+    ctx.fillStyle = "#9BE22D";
+    ctx.beginPath();
+    ctx.moveTo(canvas.width * 0.7, y);
+    ctx.lineTo(canvas.width - 3, y);
+    ctx.lineTo(canvas.width - 2, y + rowHeight);
+    ctx.lineTo(canvas.width * 0.6, y + rowHeight);
+    ctx.closePath();
+    ctx.fill();
+  };
+
+  drawAngledBlock(5);
+  drawAngledBlock(rowHeight + 5);
+
+  // === Middle line (draw after green parts so it's visible) ===
+ctx.save();
+const lineY = rowHeight + 8; // moves the line slightly down
+const gradient = ctx.createLinearGradient(0, lineY, canvas.width, lineY);
+gradient.addColorStop(0, "#5b5e61ff");
+gradient.addColorStop(0.6, "#5b5e61ff");
+gradient.addColorStop(1, "#5b5e61ff");
+ctx.strokeStyle = gradient;
+ctx.lineWidth = 5;
+ctx.beginPath();
+ctx.moveTo(10, lineY);
+ctx.lineTo(canvas.width - 10, lineY);
+ctx.stroke();
+ctx.restore();
+
+
+  // === Player Circles ===
+  const drawCircle = (x, y) => {
+    ctx.fillStyle = "#8b8b8b";
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = "#2e2e2e";
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  };
+
+  drawCircle(35, rowHeight / 2);
+  drawCircle(35, rowHeight + rowHeight / 2);
+
+  // === Player Names ===
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 22px Arial";
+  ctx.fillText(currentMatch.player1, 65, rowHeight / 2 + 8);
+  ctx.fillText(currentMatch.player2, 65, rowHeight + rowHeight / 2 + 8);
+
+  // === Scores ===
+  ctx.fillStyle = "#000000";
+  ctx.font = "bold 50px Arial";
+  const score1Width = ctx.measureText(player1Score).width;
+  const score2Width = ctx.measureText(player2Score).width;
+  ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
+  ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
+};
+
 
   const enterPiP = async () => {
     try {
