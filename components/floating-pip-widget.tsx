@@ -133,8 +133,8 @@ const drawScoreToCanvas = () => {
     ctx.fill();
   };
 
-  drawAngledBlock(5);
-  drawAngledBlock(rowHeight + 5);
+  drawAngledBlock(2);
+  drawAngledBlock(rowHeight + 4);
 
   // === Middle line (draw after green parts so it's visible) ===
   ctx.save();
@@ -143,7 +143,7 @@ const drawScoreToCanvas = () => {
   gradient.addColorStop(0.6, "#5b5e61ff"); // bright in the middle
   gradient.addColorStop(1, "#5b5e61ff");   // darker near green
   ctx.strokeStyle = gradient;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(10, rowHeight);
   ctx.lineTo(canvas.width - 10, rowHeight);
