@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { X, Maximize2 } from "lucide-react"
@@ -179,6 +179,17 @@ const drawScoreToCanvas = () => {
   const score2Width = ctx.measureText(player2Score).width;
   ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
   ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
+    // === LIVE Indicator ===
+  if (currentMatch.status === "live") {
+    ctx.fillStyle = "#ff0000"
+    ctx.beginPath()
+    ctx.arc(33, 22, 6, 0, 2 * Math.PI)
+    ctx.fill()
+
+    ctx.fillStyle = "#ff4d4d"
+    ctx.font = "bold 20px Arial"
+    ctx.fillText("Live", 45, 28)
+  }
 };
 
 
