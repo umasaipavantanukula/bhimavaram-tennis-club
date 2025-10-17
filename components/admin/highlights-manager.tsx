@@ -21,7 +21,6 @@ export function HighlightsManager() {
   const [isLoading, setIsLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [uploadingVideo, setUploadingVideo] = useState(false)
-  const [uploadingThumbnail, setUploadingThumbnail] = useState(false)
 
   useEffect(() => {
     loadHighlights()
@@ -50,7 +49,6 @@ export function HighlightsManager() {
     date: "",
     videoUrl: "",
     youtubeUrl: "",
-    thumbnailUrl: "",
     imageUrls: [] as string[],
     featured: false
   })
@@ -65,7 +63,6 @@ export function HighlightsManager() {
       date: "",
       videoUrl: "",
       youtubeUrl: "",
-      thumbnailUrl: "",
       imageUrls: [],
       featured: false
     })
@@ -88,7 +85,6 @@ export function HighlightsManager() {
         matchType: formData.matchType,
         players: playersArray,
         score: "Match", // Default value since score field is removed
-        thumbnailUrl: formData.thumbnailUrl || "/placeholder.jpg",
         videoUrl: formData.videoUrl.trim(), // Always include videoUrl field, even if empty
         youtubeUrl: formData.youtubeUrl.trim(), // YouTube embed URL
         imageUrls: imageUrlsArray,
@@ -128,7 +124,6 @@ export function HighlightsManager() {
       date: highlight.date.toISOString().split('T')[0],
       videoUrl: highlight.videoUrl || "",
       youtubeUrl: highlight.youtubeUrl || "",
-      thumbnailUrl: highlight.thumbnailUrl,
       imageUrls: highlight.imageUrls,
       featured: highlight.featured
     })
@@ -268,65 +263,7 @@ export function HighlightsManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="thumbnailFile">Thumbnail Image</Label>
-                  <Input
-                    id="thumbnailFile"
-                    type="file"
-                    accept="image/*"
-                    disabled={uploadingThumbnail}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        setUploadingThumbnail(true)
-                        try {
-                          toast.loading(`Uploading ${file.name}...`)
-                          
-                          // Upload thumbnail to Firebase Storage
-                          const thumbnailUrl = await uploadOperations.uploadImage(file, 'highlights/thumbnails')
-                          
-                          // Update form data with the download URL
-                          setFormData(prev => ({ ...prev, thumbnailUrl }))
-                          toast.success(`Thumbnail uploaded successfully!`)
-                          
-                        } catch (error: any) {
-                          console.error("Thumbnail upload error:", error)
-                          toast.error(error.message || "Failed to upload thumbnail")
-                        } finally {
-                          setUploadingThumbnail(false)
-                          // Clear the file input
-                          e.target.value = ""
-                        }
-                      }
-                    }}
-                  />
-                  {uploadingThumbnail && (
-                    <div className="flex items-center gap-2 text-sm text-blue-600">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      Uploading thumbnail...
-                    </div>
-                  )}
-                  {formData.thumbnailUrl && formData.thumbnailUrl !== "/placeholder.jpg" && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <Image className="h-4 w-4" />
-                      Thumbnail uploaded successfully
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setFormData(prev => ({ ...prev, thumbnailUrl: "" }))}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Maximum file size: 10MB. Supported formats: JPG, PNG, WebP
-                  </p>
-                </div>
-
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <Label htmlFor="videoFile">Choose Video</Label>
                   <Input
                     id="videoFile"
@@ -342,24 +279,39 @@ export function HighlightsManager() {
                         try {
                           // Dismiss any existing toasts
                           toast.dismiss()
-                          const uploadToast = toast.loading(`Uploading ${file.name}...`)
+                          const uploadToast = toast.loading(`Uploading ${file.name} to Cloudinary...`)
                           
-                          console.log("Calling uploadVideo operation...")
-                          // Upload video to Firebase Storage
-                          const videoUrl = await uploadOperations.uploadVideo(file, 'highlights/videos')
-                          console.log("Video uploaded successfully:", videoUrl)
+                          console.log("Uploading video to Cloudinary...")
+                          
+                          // Create FormData for video upload
+                          const formData = new FormData()
+                          formData.append('video', file)
+                          
+                          // Upload video to Cloudinary via API route
+                          const response = await fetch('/api/upload-video', {
+                            method: 'POST',
+                            body: formData
+                          })
+                          
+                          const result = await response.json()
+                          
+                          if (!response.ok) {
+                            throw new Error(result.error || 'Failed to upload video')
+                          }
+                          
+                          console.log("Video uploaded successfully to Cloudinary:", result.videoUrl)
                           
                           // Dismiss loading toast
                           toast.dismiss(uploadToast)
                           
-                          // Update form data with the download URL
-                          setFormData(prev => ({ ...prev, videoUrl }))
-                          toast.success(`Video uploaded successfully!`)
+                          // Update form data with the Cloudinary URL
+                          setFormData(prev => ({ ...prev, videoUrl: result.videoUrl }))
+                          toast.success(`Video uploaded successfully to Cloudinary!`)
                           
                         } catch (error: any) {
-                          console.error("Video upload error:", error)
+                          console.error("Cloudinary video upload error:", error)
                           toast.dismiss() // Clear any loading toasts
-                          toast.error(error.message || "Failed to upload video")
+                          toast.error(error.message || "Failed to upload video to Cloudinary")
                         } finally {
                           setUploadingVideo(false)
                           // Clear the file input
@@ -373,13 +325,13 @@ export function HighlightsManager() {
                   {uploadingVideo && (
                     <div className="flex items-center gap-2 text-sm text-blue-600">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      Uploading video...
+                      Uploading video to Cloudinary...
                     </div>
                   )}
                   {formData.videoUrl && (
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <Video className="h-4 w-4" />
-                      Video uploaded successfully
+                      Video uploaded to Cloudinary successfully
                       <Button
                         type="button"
                         variant="outline"
@@ -390,10 +342,9 @@ export function HighlightsManager() {
                       </Button>
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Maximum file size: 100MB. Supported formats: MP4, WebM, AVI, MOV
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  Maximum file size: 100MB. Supported formats: MP4, WebM, AVI, MOV. Videos are stored on Cloudinary with automatic optimization.
+                </p>
               </div>
 
               {/* YouTube URL Input */}
@@ -432,9 +383,8 @@ export function HighlightsManager() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading || uploadingVideo || uploadingThumbnail}>
-                  {uploadingVideo ? "Uploading Video..." : 
-                   uploadingThumbnail ? "Uploading Thumbnail..." :
+                <Button type="submit" disabled={isLoading || uploadingVideo}>
+                  {uploadingVideo ? "Uploading to Cloudinary..." : 
                    isLoading ? "Saving..." : 
                    (editingHighlight ? "Update" : "Add")} Highlight
                 </Button>
