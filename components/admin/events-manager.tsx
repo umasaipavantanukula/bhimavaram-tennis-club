@@ -326,3 +326,13 @@
 //     </div>
 //   )
 // }
+
+// Placeholder component since the main EventsManager is commented out
+export default function EventsManager() {
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Events Manager</h2>
+      <p>Events management functionality is currently disabled.</p>
+    </div>
+  )
+}

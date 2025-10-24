@@ -152,11 +152,7 @@ const drawScoreToCanvas = () => {
   };
 
   drawAngledBlock(2);
-<<<<<<< HEAD
   drawAngledBlock(rowHeight + 5);
-=======
-  drawAngledBlock(rowHeight + 4);
->>>>>>> 96415a91206b862650a70654c0b8dfd7d0e2294c
 
   // === Middle line (draw after green parts so it's visible) ===
   ctx.save();
@@ -201,12 +197,9 @@ const drawScoreToCanvas = () => {
   const score2Width = ctx.measureText(player2Score).width;
   ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
   ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
-<<<<<<< HEAD
-      // === LIVE Indicator ===
-=======
-    // === LIVE Indicator ===
->>>>>>> 96415a91206b862650a70654c0b8dfd7d0e2294c
-if (currentMatch.status === "live") {
+  
+  // === LIVE Indicator ===
+  if (currentMatch.status === "live") {
   // Use a time-based continuous pulse so it keeps animating on every redraw
   const t = Date.now() / 120; // smaller divisor -> smoother / faster pulse
   const pulse = 3 + Math.abs(Math.sin(t)) * 3; // radius range: 4 -> 8

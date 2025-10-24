@@ -33,7 +33,7 @@ export function GalleryManager() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "tournament" as const,
+    category: "tournament" as "tournament" | "training" | "events" | "facilities",
     imageFile: null as File | null,
   })
 

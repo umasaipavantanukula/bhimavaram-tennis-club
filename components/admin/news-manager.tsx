@@ -35,7 +35,7 @@ export function NewsManager() {
     title: "",
     excerpt: "",
     content: "",
-    category: "general" as const,
+    category: "general" as "tournament" | "club" | "player" | "general",
     published: false,
     imageFile: null as File | null,
   })
