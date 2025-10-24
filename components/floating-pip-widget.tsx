@@ -3,8 +3,21 @@
 import { useState, useEffect, useRef } from "react"
 import { X, Maximize2 } from "lucide-react"
 import { usePiP } from "@/lib/pip-context"
-import { matchOperations, type Match } from "@/lib/firebase-operations"
 import Image from "next/image"
+
+// Using SQL-backed API instead of Firebase for floating PiP
+type Match = {
+  id?: string
+  player1?: string | null
+  player2?: string | null
+  score?: string
+  date?: string | null
+  tournament?: string | null
+  status?: "upcoming" | "completed" | "live" | string | null
+  court?: string | null
+  createdAt?: string | null
+  live_link?: string | null
+}
 
 export function FloatingPiPWidget() {
   const { isOpen, closePiP } = usePiP()
@@ -15,8 +28,8 @@ export function FloatingPiPWidget() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const parseScore = (scoreString: string) => {
-    const parts = scoreString.split("-").map(s => s.trim())
+  const parseScore = (scoreString?: string) => {
+    const parts = (scoreString || "0-0").split("-").map(s => s.trim())
     if (parts.length >= 2) {
       return { player1Score: parts[0], player2Score: parts[1] }
     }
@@ -35,32 +48,37 @@ export function FloatingPiPWidget() {
     const fetchMatch = async () => {
       try {
         setLoading(true)
-        const matches = await matchOperations.getAll()
+
+        const res = await fetch('/api/matches')
+        if (!res.ok) throw new Error('Failed to fetch matches')
+        const data = await res.json()
+        const matches: Match[] = (data.matches || []).map((m: any) => ({ ...m, date: m.date ? new Date(m.date).toISOString() : null }))
+
         const now = new Date()
-        
+
         const liveMatch = matches.find(match => match.status === "live")
         if (liveMatch) {
-          setCurrentMatch(liveMatch)
+          setCurrentMatch({ ...liveMatch, date: liveMatch.date ? new Date(liveMatch.date).toString() : undefined } as any)
           setLoading(false)
           return
         }
-        
+
         const upcomingMatches = matches
-          .filter(match => match.status === "upcoming" && match.date >= now)
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-        
+          .filter(match => match.status === "upcoming" && match.date && new Date(match.date) >= now)
+          .sort((a, b) => (new Date(a.date || 0).getTime()) - (new Date(b.date || 0).getTime()))
+
         if (upcomingMatches.length > 0) {
-          setCurrentMatch(upcomingMatches[0])
+          setCurrentMatch({ ...upcomingMatches[0], date: upcomingMatches[0].date ? new Date(upcomingMatches[0].date).toString() : undefined } as any)
         } else {
           const completedMatches = matches
             .filter(match => match.status === "completed")
-            .sort((a, b) => b.date.getTime() - a.date.getTime())
-          
+            .sort((a, b) => (new Date(b.date || 0).getTime()) - (new Date(a.date || 0).getTime()))
+
           if (completedMatches.length > 0) {
-            setCurrentMatch(completedMatches[0])
+            setCurrentMatch({ ...completedMatches[0], date: completedMatches[0].date ? new Date(completedMatches[0].date).toString() : undefined } as any)
           }
         }
-        
+
         setLoading(false)
       } catch (error) {
         console.error("Error fetching match data:", error)
@@ -86,7 +104,7 @@ const drawScoreToCanvas = () => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const { player1Score, player2Score } = parseScore(currentMatch.score);
+  const { player1Score, player2Score } = parseScore(currentMatch.score ?? '0-0');
 
   canvas.width = 700;
   canvas.height = 200;
@@ -133,7 +151,7 @@ const drawScoreToCanvas = () => {
     ctx.fill();
   };
 
-  drawAngledBlock(5);
+  drawAngledBlock(2);
   drawAngledBlock(rowHeight + 5);
 
   // === Middle line (draw after green parts so it's visible) ===
@@ -143,7 +161,7 @@ const drawScoreToCanvas = () => {
   gradient.addColorStop(0.6, "#5b5e61ff"); // bright in the middle
   gradient.addColorStop(1, "#5b5e61ff");   // darker near green
   ctx.strokeStyle = gradient;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.beginPath();
   ctx.moveTo(10, rowHeight);
   ctx.lineTo(canvas.width - 10, rowHeight);
@@ -169,8 +187,8 @@ const drawScoreToCanvas = () => {
   // === Player Names ===
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 22px Arial";
-  ctx.fillText(currentMatch.player1, 65, rowHeight / 2 + 8);
-  ctx.fillText(currentMatch.player2, 65, rowHeight + rowHeight / 2 + 8);
+  ctx.fillText(String(currentMatch.player1 || 'Player 1'), 65, rowHeight / 2 + 8);
+  ctx.fillText(String(currentMatch.player2 || 'Player 2'), 65, rowHeight + rowHeight / 2 + 8);
 
   // === Scores ===
   ctx.fillStyle = "#000000";
@@ -179,6 +197,53 @@ const drawScoreToCanvas = () => {
   const score2Width = ctx.measureText(player2Score).width;
   ctx.fillText(player1Score, canvas.width - score1Width - 100, rowHeight / 2 + 15);
   ctx.fillText(player2Score, canvas.width - score2Width - 100, rowHeight + rowHeight / 2 + 15);
+      // === LIVE Indicator ===
+if (currentMatch.status === "live") {
+  // Use a time-based continuous pulse so it keeps animating on every redraw
+  const t = Date.now() / 120; // smaller divisor -> smoother / faster pulse
+  const pulse = 3 + Math.abs(Math.sin(t)) * 3; // radius range: 4 -> 8
+
+  const cx = 30;
+  const cy = 20;
+
+  // Outer soft glow (multiple rings for stronger effect)
+  ctx.fillStyle = `rgba(255, 0, 0, 0.12)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 8, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255, 0, 0, 0.08)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 5, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Main glow
+  ctx.fillStyle = `rgba(255, 0, 0, 0.25)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulse + 2, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Inner solid circle
+  ctx.fillStyle = "#ff0000";
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.max(2, pulse - 1), 0, 2 * Math.PI);
+  ctx.fill();
+
+  // "LIVE" label with subtle shadow
+  ctx.save();
+  ctx.font = "bold 18px Arial";
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+
+  // shadow
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillText("Live", cx + 14 + 1, cy + 1);
+
+  // foreground
+  ctx.fillStyle = "#ff4d4d";
+  ctx.fillText("LIVE", cx + 14, cy);
+  ctx.restore();
+}
 };
 
 
@@ -258,7 +323,7 @@ const drawScoreToCanvas = () => {
     )
   }
 
-  const { player1Score, player2Score } = parseScore(currentMatch.score)
+  const { player1Score, player2Score } = parseScore(currentMatch.score ?? '0-0')
 
   const handleAllowPiP = () => {
     setShowPermissionDialog(false)

@@ -40,12 +40,12 @@ export function Navigation() {
   }, [])
 
   const navItems = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/tournaments", label: "Matches", icon: Trophy },
-    { href: "/profiles", label: "Players", icon: Users },
-    { href: "/rankings", label: "Rankings", icon: Award },
-    { href: "/gallery", label: "Gallery", icon: Image },
-    { href: "/highlights", label: "Highlights", icon: Zap },
+    // { href: "/", label: "Home", icon: Home },
+    { href: "/tournaments", label: "", icon: Trophy },
+    // { href: "/profiles", label: "Players", icon: Users },
+    // { href: "/rankings", label: "Rankings", icon: Award },
+    // { href: "/gallery", label: "Gallery", icon: Image },
+    // { href: "/highlights", label: "Highlights", icon: Zap },
   ]
 
   return (

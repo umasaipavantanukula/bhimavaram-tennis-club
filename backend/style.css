@@ -1,0 +1,64 @@
+/* General body styling */
+body {
+    background-color: transparent; /* For OBS, transparent is best */
+    font-family: Arial, sans-serif;
+    color: white;
+    margin: 0;
+    padding: 20px; /* Add some padding so it's not stuck to the edge */
+}
+
+/* Main container for the scoreboard */
+.scoreboard {
+    width: 600px; /* Adjust width as needed */
+    border: 1px solid #444; /* Optional border */
+}
+
+/* Styling for each player/team row */
+.player-row {
+    background-color: #212121; /* Dark grey background */
+    display: flex;
+    justify-content: space-between; /* Pushes name and score to opposite ends */
+    align-items: stretch; /* Makes children fill the height */
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 8px; /* Space between the two rows */
+    overflow: hidden; /* Important for the clip-path effect */
+}
+
+/* The small dot on the left */
+.player-indicator {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.player-indicator::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    background-color: #888;
+    border-radius: 50%;
+}
+
+/* Container for the player names */
+.player-names {
+    padding: 15px 20px;
+    flex-grow: 1; /* Allows this section to take up available space */
+    font-weight: 900; /* Extra bold */
+    font-size: 36px; /* Increased text size */
+}
+
+/* The green score box on the right */
+.score-box {
+    background-color: #9fcc37; /* The bright green color */
+    color: #212121; /* Dark text on the green background */
+    padding: 15px 40px;
+    min-width: 50px; /* Minimum width for the score */
+    text-align: center;
+    font-size: 48px; /* Increased score number size */
+    font-weight: 900; /* Extra bold */
+    
+    /* This creates the slanted edge! */
+    clip-path: polygon(25% 0, 100% 0, 100% 100%, 0% 100%);
+}
